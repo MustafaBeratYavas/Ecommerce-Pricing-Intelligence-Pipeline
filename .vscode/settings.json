@@ -1,0 +1,19 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests/unit",
+    "--basetemp=.pytest_tmp_run",
+    "-p",
+    "no:cacheprovider"
+  ],
+  "editor.rulers": [
+    88
+  ],
+  "files.eol": "\n",
+  "[bat]": {
+    "files.eol": "\r\n"
+  }
+}

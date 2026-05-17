@@ -1,0 +1,46 @@
+scraping:
+  default_brand: "Razer"
+  retries: 3
+  search_engine_fallback: true
+  persist_unverified_fallback: false
+  google_query_format: 'site:akakce.com {brand} "{code}"'
+  input_verification_timeout: 2.0
+  input_verification_retries: 2
+  no_result_phrases:
+    - "bulunamadi"
+    - "ilginizi cekebilir"
+  no_price_indicators:
+    - "fiyat bulunamadi"
+  seller_collection:
+    max_passes: 5
+    stagnant_pass_limit: 2
+    expand_max_clicks: 5
+    expand_wait_seconds: 5
+    list_wait_seconds: 5
+    max_scroll_passes: 12
+    scroll_distance_min_px: 520
+    scroll_distance_viewport_ratio: 0.72
+    scroll_max_steps: 6
+    scroll_max_step_min_px: 180
+    scroll_max_step_viewport_ratio: 0.28
+    scroll_easing_power: 0.82
+    scroll_settle_factor: 0.2
+    scroll_settle_min_seconds: 0.08
+    scroll_settle_max_seconds: 0.24
+    default_viewport_height_px: 900
+    bottom_tolerance_px: 4
+
+delays:
+  init: [0.5, 1.0]
+  typing: [0.05, 0.15]
+  pre_enter: [0.2, 0.4]
+  post_search: [1.5, 2.0]
+  post_detail: [0.5, 1.5]
+  page_switch: [4.0, 5.0]
+  google_switch: [4.0, 5.5]
+  internal_navigation: [1.0, 1.5]
+  expand_button_discovery: [0.5, 1.0]
+  expand_button_click: [0.3, 0.5]
+  scroll: [0.5, 1.2]
+  scroll_motion: [0.03, 0.07]
+  scroll_list_into_view: [0.3, 0.5]

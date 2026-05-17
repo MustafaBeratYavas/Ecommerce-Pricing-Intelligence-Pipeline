@@ -1,0 +1,27 @@
+* text=auto
+
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+.pre-commit-config.yaml text eol=lf
+.vscode/*.json text eol=lf
+Makefile text eol=lf
+pyrightconfig.json text eol=lf
+
+*.py text eol=lf
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+
+*.png binary
+*.db binary
+*.db-wal binary
+*.db-shm binary
+*.sqlite binary
+*.sqlite3 binary

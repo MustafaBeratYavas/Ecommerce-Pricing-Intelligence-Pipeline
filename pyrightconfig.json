@@ -1,0 +1,29 @@
+{
+  "include": [
+    "src",
+    "tests"
+  ],
+  "exclude": [
+    ".browser_profile",
+    ".pre-commit-cache",
+    ".pytest_cache",
+    ".pytest_tmp*",
+    ".ruff_cache",
+    ".venv",
+    "build",
+    "dist",
+    "htmlcov",
+    "logs",
+    "**/__pycache__"
+  ],
+  "extraPaths": [
+    "src",
+    "."
+  ],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.11",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "warning",
+  "reportMissingModuleSource": "warning"
+}

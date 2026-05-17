@@ -1,0 +1,20 @@
+paths:
+  database: "database/scraper.db"
+  logs_dir: "logs"
+  reports_dir: "reports"
+  charts_dir: "reports/charts"
+  strategic_report_filename: "strategic_analysis_report.md"
+
+database:
+  connect_timeout_seconds: 30
+  busy_timeout_ms: 30000
+  analysis_busy_timeout_ms: 5000
+  snapshot_replacement_min_ratio: 0.5
+
+observability:
+  selector_usage:
+    enabled: true
+    output_path: "logs/selector_usage_latest.json"
+  normalization_usage:
+    enabled: true
+    output_path: "logs/normalization_usage_latest.json"

@@ -1,0 +1,19 @@
+scraping:
+  marketplace_id_map:
+    "10939": "Koçtaş"
+    "11070": "n11"
+  marketplace_name_aliases:
+    "Amazon Türkiye": "Amazon"
+    "Gamer.Gen.Tr": "Gamer.Gen.TR"
+    "Hepsiburada Premium": "Hepsiburada"
+    "Laptop": "Laptop.Com.TR"
+    "MediaMarkt Pazaryeri": "MediaMarkt"
+    "Pckolik": "PcKolik"
+    "Pttavm": "PttAVM"
+    "Trendyol Plus": "Trendyol"
+    "troy e-store": "Troyestore"
+    "Turkcell": "Pasaj"
+    "Ucuzbudur": "Ucuzbudur.com"
+
+analysis:
+  marketplace_display_aliases:

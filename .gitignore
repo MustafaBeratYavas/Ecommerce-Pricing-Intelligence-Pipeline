@@ -1,0 +1,66 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments and local configuration
+venv/
+.venv/
+env/
+.env
+
+# IDE and editor metadata
+.vscode/*
+!.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Test and coverage outputs
+.pytest_cache/
+.pytest_tmp*/
+.ruff_cache/
+.pre-commit-cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+
+# Application runtime data
+.browser_profile/
+logs/*
+downloaded_files/
+
+!logs/.gitkeep
+!database/.gitkeep
+
+# Operating system metadata
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Temporary files
+*.log
+*.tmp
+_test_output.txt
+_test_output/
+test_results.txt
+
+# Local database files; keep the canonical analytics warehouse versioned
+*.db
+!database/scraper.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3

@@ -1,0 +1,143 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecommerce-pricing-intelligence-pipeline"
+version = "1.0.0"
+description = "End-to-end e-commerce pricing intelligence pipeline for scraping, SQLite warehousing, and strategic marketplace analytics."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Mustafa Berat Yavaş"}
+]
+dependencies = [
+    "seleniumbase==4.46.5",
+    "selenium==4.40.0",
+    "PyYAML==6.0.3",
+    "pandas==3.0.2",
+    "numpy==2.4.4",
+    "matplotlib==3.10.8",
+    "seaborn==0.13.2",
+]
+keywords = [
+    "ecommerce",
+    "pricing-intelligence",
+    "marketplace-analytics",
+    "web-scraping",
+    "selenium",
+    "sqlite",
+    "data-pipeline",
+    "competitive-pricing",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.2",
+    "pytest-cov==7.1.0",
+    "pre-commit>=4.0,<5",
+    "ruff==0.15.12",
+]
+
+[project.scripts]
+pricing-pipeline = "src.main:main"
+pricing-analysis = "src.analysis.main:main"
+pricing-create-profile = "src.tasks.create_profile:main"
+pricing-seed-targets = "src.tasks.seed_targets:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["src", "."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+    "-ra",
+]
+markers = [
+    "integration: tests that require a live browser, network access, or external services",
+    "unit: fast isolated tests that rely on mocks, fixtures, or temporary files",
+]
+filterwarnings = [
+    "ignore:vert:PendingDeprecationWarning:seaborn.categorical",
+]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = ["src"]
+
+[tool.coverage.report]
+fail_under = 80
+precision = 2
+show_missing = true
+skip_empty = true
+sort = "Cover"
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+    "C4",
+    "UP",
+]
+ignore = [
+    "E501",
+    "B017",
+    "B018",
+    "B904",
+    "B905",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pyrefly]
+project_includes = ["src/**/*.py", "tests/**/*.py"]
+project_excludes = [
+    ".venv/**",
+    "venv/**",
+    ".browser_profile/**",
+    "**/__pycache__/**",
+    "database/**",
+    "logs/**",
+]
+search_path = [".", ".venv/Lib/site-packages"]
+python_version = "3.11"

@@ -1,0 +1,48 @@
+selectors:
+  search_input: "textarea[name='q'], input[name='q']"
+  search_result_item: "ul#APL li, ul.pl_v9 li"
+  search_result_title: "h3.pn_v8, b, span.pn_v8"
+  search_result_price: "span.pt_v8, span.pt_v9"
+  search_no_result: "div.search_v8"
+
+  product:
+    title: "h1"
+    category_crumb: "nav#BC_v8 ol li a"
+    search_category_links: "p.wbb_v8 a"
+    price: "span.pt_v8, span.pt_v9"
+    campaign_price: "span.cmpgn_pt_v8"
+    original_price_class: "orig_pt_v8"
+    sellers_list: "ul#PL, ul.pl_v9"
+    sellers_list_item: "li"
+    sellers_alt_item: "li.w_v8"
+    seller_price: "span.pt_v8, span.pt_v9"
+    seller_name_wrapper: "span.v_v8, div.v_v8, b.v_v8"
+    sellers_expand_specific:
+      - "button#SAP"
+      - "button.ca_bt"
+      - "a.ca_bt"
+      - "#PL ~ button"
+      - "#PL ~ div > button"
+    sellers_expand_candidates: "button, a"
+    sellers_expand_keywords:
+      - "daha fazla fiyat gor"
+      - "daha fazla fiyat"
+
+  card:
+    sellers_container: "div.p_w_v9"
+    seller_link: "a"
+    seller_price: "span.pt_v8"
+    seller_name_img: "span.l img"
+    seller_name_text: "span.l b"
+
+  google:
+    search_input: "textarea[name='q'], input[name='q']"
+    result_link: "div.g a, div.yuRUbf a, a[href*='akakce.com']"
+
+  overlays:
+    dismiss:
+      - "efilli-layout-dynamic"
+      - "div[class*='cookie']"
+      - "div[class*='consent']"
+      - "div[id*='cookie']"
+      - "#ob-wr"
