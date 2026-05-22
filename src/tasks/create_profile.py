@@ -1,4 +1,8 @@
-"""Create the persistent Chrome profile directory used by scraper runs."""
+"""Create or refresh the browser profile directory used by scraper runs.
+
+The task is intentionally idempotent so local and Docker workflows can prepare
+the same profile path before launching the scraping pipeline.
+"""
 
 import argparse
 import os
@@ -13,7 +17,7 @@ from src.core.config import Config
 
 
 def create_chrome_profile(user_data_dir: str, profile_name: str):
-    # Resolve profile paths relative to the repository root.
+    # Resolve relative paths against the repository root for CLI and Docker parity.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(os.path.dirname(current_dir))
 
@@ -23,7 +27,7 @@ def create_chrome_profile(user_data_dir: str, profile_name: str):
     print(f"User Data Path: {full_user_data_path}")
     print(f"Profile Name:   {profile_name}")
 
-    # Create the profile directory tree idempotently.
+    # Treat an existing profile as a successful preparation step.
     if not os.path.exists(full_profile_path):
         try:
             os.makedirs(full_profile_path, exist_ok=True)
@@ -36,7 +40,7 @@ def create_chrome_profile(user_data_dir: str, profile_name: str):
 
 
 def main():
-    # Parse CLI arguments and initialize the profile directory.
+    # Parse optional overrides while defaulting to configuration-backed paths.
     config = Config()
     parser = argparse.ArgumentParser(
         description="E-Commerce Pricing Intelligence Pipeline - Chrome Profile Creator"

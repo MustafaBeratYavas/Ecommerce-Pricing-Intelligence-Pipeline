@@ -1,4 +1,4 @@
-"""Unit tests for selector usage telemetry reporting."""
+"""Unit tests for selector contract telemetry reporting."""
 
 import json
 import shutil

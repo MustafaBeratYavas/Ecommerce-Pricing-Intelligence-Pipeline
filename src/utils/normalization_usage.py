@@ -1,4 +1,9 @@
-"""Runtime telemetry for category and marketplace normalization rules."""
+"""Track runtime usage of normalization alias rules.
+
+NormalizationUsageTracker records which category and marketplace aliases are
+configured, used, or left stale during scraping and analytics runs. It reports
+observability data only and does not alter normalization decisions.
+"""
 
 from __future__ import annotations
 
@@ -67,7 +72,7 @@ class NormalizationUsageTracker:
         normalized_value: str | None,
         context: str,
     ) -> None:
-        # Attach every runtime normalization hit to the alias rule that handled it.
+        # Attach each runtime hit to the alias rule that handled it.
         if not self.enabled or not alias:
             return
         record = self._record(self._path(path), alias)
@@ -79,7 +84,7 @@ class NormalizationUsageTracker:
         record["contexts"][context] += 1
 
     def write_report(self) -> str | None:
-        # Write a deterministic report that separates used rules from dead config.
+        # Write a deterministic report that separates used rules from stale config.
         if not self.enabled:
             return None
 

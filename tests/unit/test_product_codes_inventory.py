@@ -1,4 +1,4 @@
-"""Regression checks for the active seed product universe."""
+"""Regression checks for the curated default seed product universe."""
 
 from pathlib import Path
 

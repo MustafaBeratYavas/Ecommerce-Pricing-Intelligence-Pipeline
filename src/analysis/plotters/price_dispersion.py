@@ -1,4 +1,9 @@
-"""Price spread versus market depth bubble plot."""
+"""Render product price dispersion against marketplace depth.
+
+The plotter uses product-level metrics to compare offer count, price spread, and
+minimum price in one view. It expects DataProcessor to provide verified,
+latest-run metrics and does not perform row-level validation itself.
+"""
 
 from __future__ import annotations
 
@@ -21,7 +26,7 @@ class PriceDispersionPlotter(BasePlotter):
         product_metrics = dataset.product_metrics.copy()
         fig, ax = engine.create_figure()
 
-        # Filter out products with no active offers before computing bubble size.
+        # Filter out zero-offer products before computing bubble size.
         plot_df = product_metrics.loc[product_metrics["offer_count"] > 0].copy()
         plot_df["bubble_size"] = np.clip(plot_df["avg_price"] / 30, 80, 1400)
 

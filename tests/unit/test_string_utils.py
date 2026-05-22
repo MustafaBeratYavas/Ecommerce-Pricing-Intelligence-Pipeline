@@ -1,4 +1,4 @@
-"""Unit tests for localized price parsing and text normalization helpers."""
+"""Unit tests for price parsing, SKU matching, and text normalization helpers."""
 
 import unittest
 
@@ -24,7 +24,7 @@ class TestCleanPrice(unittest.TestCase):
         self.assertAlmostEqual(clean_price("₺ 999,99"), 999.99)
 
     def test_empty_string(self):
-        # Empty price inputs should safely normalize to 0.0.
+        # Empty price inputs should safely normalize to the zero-price contract.
         self.assertAlmostEqual(clean_price(""), 0.0)
 
     def test_none_input(self):
@@ -62,7 +62,7 @@ class TestCleanText(unittest.TestCase):
 
 class TestToAscii(unittest.TestCase):
     def test_turkish_chars(self):
-        # Turkish-specific characters should transliterate without losing case intent.
+        # Localized characters should transliterate without losing case intent.
         self.assertEqual(to_ascii("çğışöüÇĞİŞÖÜ"), "cgisouCGISOU")
 
     def test_plain_ascii(self):

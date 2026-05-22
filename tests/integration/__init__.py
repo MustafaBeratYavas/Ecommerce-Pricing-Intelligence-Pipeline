@@ -1,1 +1,1 @@
-"""Integration tests for multi-component runtime behavior."""
+"""Integration tests that exercise live runtime boundaries."""

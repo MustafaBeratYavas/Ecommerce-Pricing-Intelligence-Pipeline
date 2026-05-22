@@ -1,4 +1,9 @@
-"""Extract title, category, and price fields from a product detail page."""
+"""Extract primary product metadata from the active detail page.
+
+DetailScraper reads title, category, and primary price fields into a ProductDTO.
+It intentionally stops short of seller offer extraction, page resolution, and
+database persistence so those responsibilities remain testable boundaries.
+"""
 
 import random
 import re
@@ -20,7 +25,7 @@ class DetailScraper:
         self.logger = Logger.get_logger(__name__)
 
     def scrape(self, dto: ProductDTO) -> bool:
-        # Extract primary metadata from the current detail page.
+        # Treat metadata extraction as a single detail-page boundary.
         product_sel = self.config.get("selectors", "product")
         if not product_sel:
             self.logger.warning(
@@ -33,7 +38,7 @@ class DetailScraper:
         self._extract_price(dto, product_sel)
         self._extract_category(dto, product_sel)
 
-        # Add a light delay to reduce back-to-back page interactions.
+        # Add light pacing before seller extraction continues on the same page.
         delay_range = self.config.get("delays", "post_detail", default=[0.5, 1.5])
         if random.random() > 0.3:
             time_utils.random_sleep(*delay_range)
@@ -41,7 +46,7 @@ class DetailScraper:
         return True
 
     def _extract_title(self, dto: ProductDTO, selectors: dict) -> None:
-        # Read the first matching title element.
+        # Prefer the first configured title match as the product identity field.
         title_sel = selectors.get("title", "h1")
         elements = self.driver.find_elements(By.CSS_SELECTOR, title_sel)
         selector_usage.record_match(
@@ -54,7 +59,7 @@ class DetailScraper:
             dto.title = elements[0].text.strip()
 
     def _extract_price(self, dto: ProductDTO, selectors: dict) -> None:
-        # Read and normalize the primary price element.
+        # Normalize the page-level price before seller-level offers refine it.
         price_sel = selectors.get("price", "span.pt_v8")
         elements = self.driver.find_elements(By.CSS_SELECTOR, price_sel)
         selector_usage.record_match(
@@ -67,7 +72,7 @@ class DetailScraper:
             dto.price = string_utils.clean_price(elements[0].text)
 
     def _normalise_category(self, raw_category: str, brand: str | None) -> str:
-        # Remove embedded brand text from the leaf category when present.
+        # Remove embedded brand text so category labels remain analysis-friendly.
         category = raw_category.strip()
         if not category:
             return ""

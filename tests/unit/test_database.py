@@ -1,4 +1,4 @@
-"""Unit tests for database lifecycle, queue state, and persistence behavior."""
+"""Unit tests for database persistence, queue state, and schema safeguards."""
 
 import sqlite3
 import unittest
@@ -85,7 +85,7 @@ class TestDatabaseService(unittest.TestCase):
 
         cursor = self.db.conn.execute("SELECT COUNT(*) FROM products")
         count = cursor.fetchone()[0]
-        # Persist every row from the provided batch.
+        # Batch inserts should preserve every validated row.
         self.assertEqual(count, 3)
 
     def test_insert_products_empty_list(self):
@@ -205,7 +205,7 @@ class TestDatabaseService(unittest.TestCase):
         self.db.add_target_product("T-002")
         self.db.add_target_product("T-001")
 
-        # Claim pending queue items sequentially.
+        # Pending queue items should be claimed in persisted order.
         target1 = self.db.get_pending_product()
         self.assertIsNotNone(target1)
         assert target1 is not None
@@ -232,7 +232,7 @@ class TestDatabaseService(unittest.TestCase):
         self.db.update_target_status(target3["id"], "FAILED", 1)
 
         empty = self.db.get_pending_product()
-        # Return None once the pending queue is exhausted.
+        # Exhausted queues should return None instead of repeating work.
         self.assertIsNone(empty)
 
     def test_queue_count_and_position_are_stable_across_retries(self):

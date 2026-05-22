@@ -1,4 +1,9 @@
-"""SeleniumBase browser lifecycle management."""
+"""Manage the SeleniumBase browser lifecycle for scraper runs.
+
+BrowserEngine translates configuration-backed browser settings into one driver
+session and guarantees shutdown through a context-manager boundary. It does not
+perform scraping or product resolution itself.
+"""
 
 from __future__ import annotations
 
@@ -19,7 +24,7 @@ class BrowserEngine:
         self.driver: Any = None
 
     def __enter__(self) -> Any:
-        # Start the driver as the context opens.
+        # Start the driver at the context boundary so callers get a ready handle.
         self.start()
         assert self.driver is not None, (
             "BrowserEngine.start() failed to initialise the driver"
@@ -114,7 +119,7 @@ class BrowserEngine:
             raise
 
     def stop(self) -> None:
-        # Always clear the cached handle after attempting shutdown.
+        # Always clear the cached handle so failed shutdowns cannot be reused.
         if self.driver:
             try:
                 self.driver.quit()

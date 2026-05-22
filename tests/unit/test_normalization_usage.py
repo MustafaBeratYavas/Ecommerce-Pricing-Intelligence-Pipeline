@@ -1,4 +1,4 @@
-"""Unit tests for normalization usage telemetry."""
+"""Unit tests for normalization alias telemetry reports."""
 
 import json
 import shutil

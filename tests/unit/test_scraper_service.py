@@ -1,4 +1,4 @@
-"""Unit tests for scraper orchestration and fallback behavior."""
+"""Unit tests for product resolution orchestration and fallback behavior."""
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -59,7 +59,7 @@ class TestScraperService(unittest.TestCase):
 
         result = self.service.process_product(dto)
 
-        # Direct URL extraction should bypass search when it succeeds.
+        # Valid direct URLs should bypass broader search paths.
         self.assertIsNotNone(result.url)
         self.mock_detail.scrape.assert_called_once()
 
@@ -195,7 +195,7 @@ class TestScraperService(unittest.TestCase):
     def test_try_google_search_success(self):
         dto = ProductDTO(code="G1")
         self.mock_search.search_google.return_value = ["http://akakce.com/1"]
-        # Fallback search should navigate to the first candidate with valid data.
+        # Fallback search should stop at the first candidate with valid data.
         with patch.object(self.service, "_scrape_and_extract", return_value=True):
             self.service._try_google_search(dto)
             self.assertIsNotNone(dto.url)

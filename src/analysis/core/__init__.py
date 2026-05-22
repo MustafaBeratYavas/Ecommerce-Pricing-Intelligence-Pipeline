@@ -1,4 +1,9 @@
-"""Core data loading, transformation, plotting, and report generation helpers."""
+"""Core analytics primitives for loading, shaping, plotting, and reporting.
+
+These helpers form the internal contract used by plotters and the analytics
+entry point while keeping database reads, dataset preparation, figure export,
+and report writing separated.
+"""
 
 from .data_processor import AnalyticsDataset, DataProcessor
 from .db_handler import DBHandler

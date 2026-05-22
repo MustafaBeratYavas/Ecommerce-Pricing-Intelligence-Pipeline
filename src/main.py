@@ -1,4 +1,10 @@
-"""Application entry point for the scraping pipeline."""
+"""Bootstrap and run the scraping pipeline.
+
+This module wires configuration, logging, selector telemetry, database
+persistence, browser lifecycle, and scraping services for one process-level
+run. It owns orchestration and shutdown reporting, while extraction and queue
+progression remain delegated to specialized collaborators.
+"""
 
 import os
 import sys
@@ -6,7 +12,7 @@ import tomllib
 from importlib import metadata
 from pathlib import Path
 
-# Allow direct execution from the repository root without installation.
+# Support direct source-tree execution while preserving absolute package imports.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -29,7 +35,7 @@ PYPROJECT_PATH = Path(__file__).resolve().parents[1] / "pyproject.toml"
 
 
 def _project_metadata() -> tuple[str, str]:
-    # Read package metadata from pyproject.toml after installation.
+    # Prefer installed package metadata so logs match the deployed artifact.
     try:
         app_name = metadata.metadata(PACKAGE_NAME)["Name"]
         version = metadata.version(PACKAGE_NAME)
@@ -39,7 +45,7 @@ def _project_metadata() -> tuple[str, str]:
 
 
 def _project_metadata_from_pyproject() -> tuple[str, str]:
-    # Keep source-tree execution aligned with the package manifest.
+    # Fall back to the source manifest when the package has not been installed.
     try:
         project = tomllib.loads(PYPROJECT_PATH.read_text(encoding="utf-8")).get(
             "project", {}

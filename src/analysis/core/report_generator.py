@@ -1,4 +1,9 @@
-"""Write a markdown inventory of generated strategic charts."""
+"""Write the markdown report that indexes generated analytics artifacts.
+
+ReportGenerator converts plot artifacts and dataset metrics into a deterministic
+report file. It records relative paths where possible so reports remain portable
+across local and Docker runs.
+"""
 
 from __future__ import annotations
 
@@ -38,7 +43,7 @@ class ReportGenerator:
         rejected_latest_rows: int = 0,
         dataset_metrics: dict[str, int] | None = None,
     ) -> str:
-        # Assemble a deterministic markdown report for charts generated this run.
+        # Assemble a deterministic report for artifacts generated in this run.
         report_path = self.report_path or os.path.join(
             self.report_dir, self.report_filename
         )

@@ -1,4 +1,9 @@
-"""Chart canvas creation, cleanup, and export operations."""
+"""Provide figure lifecycle utilities for analytics plotters.
+
+PlotEngine centralizes output-directory handling, stale chart cleanup, figure
+creation, and PNG export. Plotters own visual semantics; this module owns the
+artifact boundary.
+"""
 
 from __future__ import annotations
 

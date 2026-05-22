@@ -1,4 +1,8 @@
-"""Randomized sleep helpers used to stabilize scraper cadence."""
+"""Timing helpers for paced browser interactions.
+
+The scraping pipeline uses bounded jitter to reduce brittle back-to-back UI
+actions while keeping tests able to patch timing behavior cleanly.
+"""
 
 import random
 import time

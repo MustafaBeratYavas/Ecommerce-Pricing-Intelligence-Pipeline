@@ -1,4 +1,8 @@
-"""Strategic chart plotter registry exports."""
+"""Export the strategic plotters used by the analytics entry point.
+
+Keeping plotter imports centralized gives the report generator a stable chart
+portfolio without making individual plotter modules depend on orchestration.
+"""
 
 from .assortment_vulnerability import AssortmentVulnerabilityPlotter
 from .base_plotter import BasePlotter

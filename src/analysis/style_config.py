@@ -1,4 +1,10 @@
-"""Central design tokens for the strategic analytics reporting layer."""
+"""Style contract for analytics charts.
+
+StyleConfig centralizes figure geometry, color tokens, typography, and
+configuration-backed overrides so independently implemented plotters render as
+one report portfolio. It applies Matplotlib/Seaborn state only when explicitly
+requested by the analytics entry point.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 from cycler import cycler
+from matplotlib import colormaps
 from matplotlib.colors import to_hex
 
 FigureSize = tuple[float, float]
@@ -15,7 +22,7 @@ AxesRect = tuple[float, float, float, float]
 
 
 class StyleConfig:
-    # Centralize chart geometry so every exported figure has the same canvas.
+    # Centralize geometry so exported charts align inside one report portfolio.
     FIGURE_SIZE: FigureSize = (19.2, 10.8)
     LARGE_FIGURE_SIZE: FigureSize = (19.2, 10.8)
     DPI = 100
@@ -76,7 +83,7 @@ class StyleConfig:
 
     @classmethod
     def refresh_from_config(cls, config=None) -> None:
-        # Pull optional chart styling overrides from YAML without losing defaults.
+        # Merge YAML overrides without discarding the code-level report defaults.
         if config is None:
             from src.core.config import Config
 
@@ -153,10 +160,10 @@ class StyleConfig:
 
     @classmethod
     def get_marketplace_palette(cls, count: int) -> list[str]:
-        # Build a long deterministic palette for marketplaces beyond the base set.
+        # Build a deterministic palette for marketplaces beyond the base set.
         palette = []
         for cmap_name in ("tab20", "tab20b", "tab20c", "Set3", "Dark2"):
-            cmap = plt.get_cmap(cmap_name)
+            cmap = colormaps[cmap_name]
             colors = getattr(cmap, "colors", None)
             if colors is None:
                 colors = [cmap(i / max(count - 1, 1)) for i in range(count)]
@@ -192,7 +199,7 @@ class StyleConfig:
 
     @classmethod
     def apply_theme(cls) -> None:
-        # Apply the full Matplotlib/Seaborn theme once before rendering charts.
+        # Apply global plotting state at the analytics boundary, not at import time.
         cls.refresh_from_config()
         sns.set_theme(style="darkgrid")
         plt.rcParams.update(

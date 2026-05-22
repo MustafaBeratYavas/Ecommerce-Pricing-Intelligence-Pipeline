@@ -1,1 +1,5 @@
-"""Data transfer objects used across the scraping and persistence layers."""
+"""Data contracts shared by scraping, validation, and persistence layers.
+
+Model objects carry product and offer state across service boundaries without
+owning browser access or database connections.
+"""

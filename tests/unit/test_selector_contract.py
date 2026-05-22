@@ -1,4 +1,8 @@
-"""Selector contract tests against small local HTML fixtures."""
+"""Selector contract tests against local marketplace HTML fixtures.
+
+These tests protect configured selector intent without requiring live browser
+traffic, giving scraper changes a fast regression signal.
+"""
 
 import re
 from pathlib import Path

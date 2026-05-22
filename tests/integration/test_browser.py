@@ -1,4 +1,8 @@
-"""Integration coverage for launching the live browser engine."""
+"""Live browser integration coverage for the SeleniumBase runtime boundary.
+
+These tests are opt-in because they require a real browser stack and external
+network access; unit tests cover the same lifecycle contract with mocks.
+"""
 
 import os
 import unittest
@@ -15,7 +19,7 @@ class TestBrowser(unittest.TestCase):
         try:
             with BrowserEngine() as driver:
                 driver.get("https://www.google.com")
-                # Confirm the browser can render a live external page.
+                # Confirm the configured browser can render a live external page.
                 self.assertIn("Google", driver.title)
         except Exception as e:
             self.fail(f"Browser launch failed: {e}")

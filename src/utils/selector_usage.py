@@ -1,4 +1,9 @@
-"""Runtime telemetry for configured selector usage during scraping runs."""
+"""Track runtime usage of configured selector contracts.
+
+SelectorUsageTracker records which configured selectors are looked up, matched,
+missed, or left unused during a scraping run. The report supports selector
+maintenance without influencing scraping decisions.
+"""
 
 from __future__ import annotations
 
@@ -18,7 +23,7 @@ class SelectorUsageTracker:
         self._records: dict[str, dict[str, Any]] = {}
 
     def configure(self, settings: dict[str, Any] | None = None) -> None:
-        # Resolve runtime reporting settings before any selector lookups are recorded.
+        # Resolve reporting settings before any selector lookup is recorded.
         settings = settings if isinstance(settings, dict) else {}
         self.enabled = bool(settings.get("enabled", True))
         configured_path = settings.get("output_path")
@@ -36,7 +41,7 @@ class SelectorUsageTracker:
         self._register_node(("selectors",), selectors)
 
     def record_lookup(self, keys: tuple[object, ...], value: Any) -> None:
-        # Track config reads separately from DOM matches to expose unmeasured paths.
+        # Separate config reads from DOM matches to expose unmeasured selectors.
         if not self.enabled:
             return
         path = self._path(keys)
@@ -51,7 +56,7 @@ class SelectorUsageTracker:
         match_count: int,
         context: str,
     ) -> None:
-        # Record each selector execution with the caller that observed the result.
+        # Attach selector outcomes to callers so stale contracts are traceable.
         if not self.enabled or not selector:
             return
         normalized_path = self._path(path)
@@ -66,7 +71,7 @@ class SelectorUsageTracker:
         record["contexts"][context] += 1
 
     def write_report(self) -> str | None:
-        # Persist a compact JSON report for post-scrape selector cleanup decisions.
+        # Persist a compact JSON report for post-scrape selector maintenance.
         if not self.enabled:
             return None
 

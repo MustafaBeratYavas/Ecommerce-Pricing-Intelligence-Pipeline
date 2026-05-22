@@ -1,4 +1,4 @@
-name: E-COMMERCE PRICING INTELLIGENCE PIPELINE CI
+name: CI
 
 on:
   push:
@@ -38,6 +38,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install ".[dev]"
+
+      - name: Validate Docker Compose configuration
+        if: matrix.python-version == '3.11'
+        run: make docker-config
 
       - name: Run CI checks
         run: make ci

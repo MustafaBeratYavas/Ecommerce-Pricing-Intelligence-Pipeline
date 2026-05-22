@@ -1,4 +1,4 @@
-"""Unit tests for the read-only analytics database access layer."""
+"""Unit tests for read-only analytics database access and schema tolerance."""
 
 from __future__ import annotations
 

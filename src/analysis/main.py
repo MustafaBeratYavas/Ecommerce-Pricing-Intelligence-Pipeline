@@ -1,4 +1,9 @@
-"""Generate the strategic analytics chart portfolio and report."""
+"""Run the analytics pipeline over the latest validated scraper snapshot.
+
+StrategicAnalysisApp coordinates read-only warehouse access, dataset
+preparation, chart rendering, markdown report generation, and normalization
+telemetry. It does not scrape, seed targets, or mutate queue state.
+"""
 
 from __future__ import annotations
 
@@ -35,7 +40,7 @@ class StrategicAnalysisApp:
     ) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = Config()
-        # Register normalization telemetry for aliases applied during analysis.
+        # Register normalization telemetry before dataset preparation records hits.
         normalization_usage.configure(
             self.config.get("observability", "normalization_usage", default={})
         )
@@ -50,7 +55,7 @@ class StrategicAnalysisApp:
         self.plotters = self._build_plotter_registry()
 
     def _build_plotter_registry(self):
-        # Keep chart ordering stable so generated filenames remain predictable.
+        # Keep chart ordering stable so report artifacts remain predictable.
         return [
             MarketplaceAggressivenessPlotter(),
             PriceDispersionPlotter(),
@@ -65,7 +70,7 @@ class StrategicAnalysisApp:
         dataset = self.data_processor.prepare_dataset(raw_products)
         self.plot_engine.clear_output()
 
-        # Render every registered plotter into a common artifact contract.
+        # Render every plotter through the same report-facing artifact contract.
         artifacts = []
         for index, plotter in enumerate(self.plotters, start=1):
             self.logger.info(

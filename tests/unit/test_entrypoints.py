@@ -1,4 +1,4 @@
-"""Regression tests for direct script execution import paths."""
+"""Regression tests for direct source-tree entrypoint execution."""
 
 import subprocess
 import sys

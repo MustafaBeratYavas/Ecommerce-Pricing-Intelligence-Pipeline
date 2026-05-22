@@ -1,11 +1,17 @@
-"""Prepare warehouse snapshots for strategic analytics plots."""
+"""Prepare warehouse snapshots for the analytics pipeline.
+
+DataProcessor coerces raw SQLite rows into validated, latest-run datasets and
+product-level metrics consumed by strategic plotters. It filters unverified
+product matches out of analytics views but does not read from or write to the
+database directly.
+"""
 
 from __future__ import annotations
 
 import math
 import unicodedata
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import numpy as np
 import pandas as pd
@@ -41,7 +47,7 @@ class DataProcessor:
     def prepare_dataset(self, df: pd.DataFrame) -> AnalyticsDataset:
         data = df.copy()
 
-        # Coerce warehouse rows into predictable analysis types before filtering.
+        # Coerce storage-oriented rows before any analytics filtering occurs.
         data["scraped_at"] = pd.to_datetime(data["scraped_at"], errors="coerce")
         data["price"] = pd.to_numeric(data["price"], errors="coerce")
         data["product_code"] = (
@@ -58,7 +64,7 @@ class DataProcessor:
         data["source"] = data.get("source", "unknown")
         data["match_verified"] = self._build_match_verified_mask(data)
 
-        # Normalize business labels after row-level validity has been established.
+        # Normalize labels only after row-level validity has been established.
         data["product_category"] = data["product_category"].apply(
             self.translate_category
         )
@@ -108,7 +114,7 @@ class DataProcessor:
         if not category:
             return "Unclassified"
 
-        # Match exact configured labels first, then fall back to ASCII-tolerant keys.
+        # Prefer exact configured labels, then tolerate localized ASCII variants.
         ascii_category = self._ascii_text(category)
         aliases = self._get_category_aliases()
         if category in aliases:
@@ -138,7 +144,7 @@ class DataProcessor:
         if not name:
             return ""
 
-        # Apply canonical marketplace aliases before presentation-only display aliases.
+        # Apply canonical aliases before presentation-only display aliases.
         ascii_key = self._normalize_key(name)
         config_aliases = (
             self.config.get("scraping", "marketplace_name_aliases", default={}) or {}
@@ -191,16 +197,19 @@ class DataProcessor:
         latest_snapshot: pd.DataFrame,
         latest_active_offers: pd.DataFrame,
     ) -> pd.DataFrame:
-        # Build one product-grain row even when a product has no active offer.
-        product_dimension = (
-            latest_snapshot.sort_values(["product_code", "product_name"])
-            .groupby("product_code", as_index=False)
-            .agg(
-                brand=("brand", "first"),
-                product_category=("product_category", "first"),
-                product_name=("product_name", "first"),
-                product_url=("product_url", "first"),
-            )
+        # Preserve zero-offer products so portfolio charts can show coverage gaps.
+        product_dimension = cast(
+            pd.DataFrame,
+            (
+                latest_snapshot.sort_values(["product_code", "product_name"])
+                .groupby("product_code", as_index=False)
+                .agg(
+                    brand=("brand", "first"),
+                    product_category=("product_category", "first"),
+                    product_name=("product_name", "first"),
+                    product_url=("product_url", "first"),
+                )
+            ),
         )
 
         if latest_active_offers.empty:
@@ -214,23 +223,31 @@ class DataProcessor:
             product_dimension["price_tier"] = None
             return product_dimension
 
-        # Derive offer-depth and price-spread signals used by downstream charts.
-        metrics = latest_active_offers.groupby("product_code", as_index=False).agg(
-            offer_count=("price", "size"),
-            seller_count=("marketplace", "nunique"),
-            min_price=("price", "min"),
-            max_price=("price", "max"),
-            avg_price=("price", "mean"),
-            median_price=("price", "median"),
+        # Derive offer-depth and price-spread signals once for all plotters.
+        metrics = cast(
+            pd.DataFrame,
+            latest_active_offers.groupby("product_code", as_index=False).agg(
+                offer_count=("price", "size"),
+                seller_count=("marketplace", "nunique"),
+                min_price=("price", "min"),
+                max_price=("price", "max"),
+                avg_price=("price", "mean"),
+                median_price=("price", "median"),
+            ),
         )
         metrics["price_spread_pct"] = np.where(
             metrics["min_price"] > 0,
             (metrics["max_price"] - metrics["min_price"]) / metrics["min_price"] * 100,
             np.nan,
         )
-        metrics["price_tier"] = metrics["min_price"].apply(self.assign_price_tier)
+        metrics["price_tier"] = cast(pd.Series, metrics["min_price"]).apply(
+            self.assign_price_tier
+        )
 
-        merged = product_dimension.merge(metrics, on="product_code", how="left")
+        merged = cast(
+            pd.DataFrame,
+            product_dimension.merge(metrics, on="product_code", how="left"),
+        )
         merged["offer_count"] = merged["offer_count"].fillna(0).astype(int)
         merged["seller_count"] = merged["seller_count"].fillna(0).astype(int)
         return merged
@@ -281,7 +298,7 @@ class DataProcessor:
         }
 
     def _build_match_verified_mask(self, data: pd.DataFrame) -> pd.Series:
-        # Require both the stored verifier flag and visible product-code evidence.
+        # Require both stored verification and visible product-code evidence.
         stored_flag = (
             data["match_verified"]
             if "match_verified" in data.columns

@@ -1,0 +1,46 @@
+name: ecommerce-pricing-intelligence-pipeline
+
+services:
+  ecommerce-pricing-intelligence-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    image: ecommerce-pricing-intelligence-pipeline:latest
+    init: true
+    shm_size: "2gb"
+    environment:
+      APP_ENV: ${APP_ENV:-docker}
+      APP_COMMAND: ${APP_COMMAND:-run}
+      SEED_FILE: ${SEED_FILE:-product_codes.txt}
+      TZ: ${TZ:-Europe/Istanbul}
+      PRICING_PIPELINE__browser__headless: ${PRICING_PIPELINE__browser__headless:-true}
+      PRICING_PIPELINE__browser__captcha_auto_click: ${PRICING_PIPELINE__browser__captcha_auto_click:-false}
+      PRICING_PIPELINE__browser__page_load_timeout: ${PRICING_PIPELINE__browser__page_load_timeout:-45}
+      PRICING_PIPELINE__browser__implicit_wait: ${PRICING_PIPELINE__browser__implicit_wait:-5}
+      PRICING_PIPELINE__scraping__retries: ${PRICING_PIPELINE__scraping__retries:-3}
+      PRICING_PIPELINE__paths__database: ${PRICING_PIPELINE__paths__database:-database/scraper.db}
+      PRICING_PIPELINE__paths__logs_dir: ${PRICING_PIPELINE__paths__logs_dir:-logs}
+      PRICING_PIPELINE__paths__reports_dir: ${PRICING_PIPELINE__paths__reports_dir:-reports}
+      PRICING_PIPELINE__paths__charts_dir: ${PRICING_PIPELINE__paths__charts_dir:-reports/charts}
+    volumes:
+      - type: bind
+        source: ./database
+        target: /app/database
+      - type: bind
+        source: ./logs
+        target: /app/logs
+      - type: bind
+        source: ./reports
+        target: /app/reports
+      - type: bind
+        source: ./.browser_profile
+        target: /app/.browser_profile
+      - type: bind
+        source: ./product_codes.txt
+        target: /app/product_codes.txt
+        read_only: true
+      - type: bind
+        source: ./config
+        target: /app/config
+        read_only: true

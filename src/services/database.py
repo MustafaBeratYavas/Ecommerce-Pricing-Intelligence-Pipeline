@@ -1,4 +1,10 @@
-"""SQLite setup, queue operations, and product persistence helpers."""
+"""Own SQLite persistence, queue state, and snapshot replacement.
+
+DatabaseService is the database boundary for the scraping pipeline. It manages
+schema compatibility, run-scoped identifiers, queue state transitions, and
+validated product-offer writes while hiding SQLite transaction details from
+scraper orchestration.
+"""
 
 import os
 import sqlite3
@@ -89,7 +95,7 @@ class DatabaseService:
     _VALID_TARGET_STATUSES = {"PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"}
 
     def __new__(cls) -> "DatabaseService":
-        # Reuse one database service instance across the process.
+        # Reuse one service per process so queue and run metadata stay consistent.
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialised = False
@@ -120,7 +126,7 @@ class DatabaseService:
         self._initialised = True
 
     def _connect(self) -> None:
-        # Open the SQLite connection and ensure the required schema exists.
+        # Open the connection and migrate local warehouses before runtime writes.
         try:
             connect_timeout = self._config_float(
                 ("database", "connect_timeout_seconds"), 30
@@ -179,7 +185,7 @@ class DatabaseService:
         return {row[1] for row in cursor.fetchall()}
 
     def _ensure_connection(self) -> None:
-        # Reconnect if the singleton was closed earlier in the process.
+        # Reconnect closed singletons so tests and sequential runs stay isolated.
         if self._connection is None:
             self.logger.info("Reconnecting to database (Singleton recovery)...")
             self._run_id = self._new_run_id()
@@ -199,7 +205,7 @@ class DatabaseService:
         self.close()
 
     def close(self) -> None:
-        # Close the active connection and clear the cached handle.
+        # Clear the cached handle so the singleton can reconnect cleanly later.
         if self._connection:
             try:
                 self._connection.close()
@@ -210,7 +216,7 @@ class DatabaseService:
                 self._connection = None
 
     def insert_product(self, row: dict) -> None:
-        # Insert one normalized product offer row.
+        # Insert one normalized row through the same validation path as batches.
         self._ensure_connection()
         normalized_row = self._normalize_product_row(row)
         self._validate_normalized_product_rows([normalized_row])
@@ -223,7 +229,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to insert product: {exc}") from exc
 
     def insert_products(self, rows: list[dict]) -> None:
-        # Insert a batch of product offer rows in one transaction.
+        # Insert a batch in one transaction so a product snapshot is all-or-nothing.
         if not rows:
             return
 
@@ -239,7 +245,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to insert product batch: {exc}") from exc
 
     def replace_products_snapshot(self, rows: list[dict]) -> None:
-        # Replace same-day snapshots for the product codes included in the batch.
+        # Replace same-day snapshots only after the incoming batch passes safeguards.
         if not rows:
             return
 
@@ -370,7 +376,7 @@ class DatabaseService:
         return int(bool(value))
 
     def add_target_product(self, code: str) -> None:
-        # Enqueue a product code if it has not been seeded already.
+        # Enqueue once; repeated seeds should not duplicate queue work.
         self._ensure_connection()
         try:
             sql = "INSERT OR IGNORE INTO target_products (product_code) VALUES (?)"
@@ -382,7 +388,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to seed target code: {exc}") from exc
 
     def sync_target_product(self, code: str) -> None:
-        # Add or requeue a product code when a seed file is used for a new run.
+        # Requeue existing seed targets so each seeded run can refresh them.
         self._ensure_connection()
         try:
             sql = """
@@ -403,7 +409,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to synchronize target code: {exc}") from exc
 
     def get_pending_product(self) -> dict | None:
-        # Claim the next pending product and mark it in progress.
+        # Claim one pending target atomically from the local queue.
         self._ensure_connection()
         try:
             cursor = self.conn.cursor()
@@ -445,7 +451,7 @@ class DatabaseService:
             raise DatabaseError(f"Queue lock error: {exc}") from exc
 
     def get_target_count(self) -> int:
-        # Return the total number of product codes in the queue.
+        # Keep queue sizing stable for progress logging.
         self._ensure_connection()
         try:
             cursor = self.conn.execute("SELECT COUNT(*) FROM target_products")
@@ -454,7 +460,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to count target products: {exc}") from exc
 
     def get_target_position(self, target_id: int) -> int:
-        # Return the stable 1-based queue position for a target row.
+        # Use the persisted row order as the stable human-facing position.
         self._ensure_connection()
         try:
             cursor = self.conn.execute(
@@ -470,7 +476,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to calculate target position: {exc}") from exc
 
     def reset_stale_in_progress(self) -> int:
-        # Recover queue items left in progress by a crashed or interrupted run.
+        # Recover in-progress items from interrupted runs before new work starts.
         self._ensure_connection()
         try:
             self.conn.execute("BEGIN IMMEDIATE")
@@ -490,7 +496,7 @@ class DatabaseService:
     def update_target_status(
         self, target_id: int, status: str, error_count: int = 0
     ) -> None:
-        # Update queue status, retry count, and last processed timestamp.
+        # Keep retry accounting and last-processed metadata in one update.
         if status not in self._VALID_TARGET_STATUSES:
             raise DatabaseError(f"Invalid target status: {status}")
 
@@ -510,7 +516,7 @@ class DatabaseService:
             raise DatabaseError(f"Failed to update target status: {exc}") from exc
 
     def get_product_codes_for_url(self, url: str) -> set[str]:
-        # Return every product code previously stored for a canonical product URL.
+        # Use persisted URL-code links to avoid reusing one page for another SKU.
         self._ensure_connection()
         canonical = self._canonicalize_url(url)
         if not canonical:

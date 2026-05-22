@@ -1,4 +1,9 @@
-"""Read-only access layer for the SQLite products warehouse."""
+"""Read product snapshots from SQLite for analytics without mutating storage.
+
+DBHandler resolves the configured warehouse path, opens SQLite in read-only
+mode, and adapts optional schema columns for older local databases. It is the
+only database-facing boundary used by the analytics pipeline.
+"""
 
 from __future__ import annotations
 
@@ -16,7 +21,7 @@ from src.definitions import ROOT_DIR
 class DBHandler:
     def __init__(self, config: Config | None = None) -> None:
         self.config = config or Config()
-        # Resolve the warehouse path from config while keeping analysis read-only.
+        # Resolve the warehouse path once so all analytics reads target one snapshot.
         db_relative_path = self.config.get(
             "paths", "database", default="database/scraper.db"
         )
@@ -32,7 +37,7 @@ class DBHandler:
 
     @contextmanager
     def read_only_connection(self) -> Generator[sqlite3.Connection, None, None]:
-        # Open SQLite in URI read-only mode to protect the scraper warehouse.
+        # Use SQLite URI read-only mode to protect the scraper warehouse.
         connection = sqlite3.connect(self._uri, uri=True)
         try:
             connection.execute("PRAGMA query_only = ON;")
@@ -56,7 +61,7 @@ class DBHandler:
 
     @staticmethod
     def _resolve_product_columns(connection: sqlite3.Connection) -> list[str]:
-        # Keep compatibility with older databases created before optional fields.
+        # Keep compatibility with databases created before optional provenance fields.
         required_columns = [
             "id",
             "brand",

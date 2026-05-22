@@ -1,4 +1,9 @@
-"""Portfolio mix by category and price tier."""
+"""Render portfolio mix across categories and configured price tiers.
+
+The plotter summarizes product-grain metrics into stacked category bars. It
+relies on DataProcessor for tier assignment and avoids any direct warehouse or
+scraper dependencies.
+"""
 
 from __future__ import annotations
 

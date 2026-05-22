@@ -1,1 +1,1 @@
-"""Root test package for unit and integration suites."""
+"""Test package for unit, contract, and integration coverage."""

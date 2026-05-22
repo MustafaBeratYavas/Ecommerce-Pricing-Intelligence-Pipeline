@@ -1,6 +1,3 @@
-# EditorConfig keeps local editor output aligned with Git and CI expectations.
-# See https://editorconfig.org for editor support.
-
 root = true
 
 [*]

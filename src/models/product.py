@@ -1,4 +1,9 @@
-"""Product data transfer object and database row conversion logic."""
+"""Product snapshot DTO and database row projection.
+
+ProductDTO carries resolved product metadata, seller offers, source provenance,
+and page-verification state across the scraping pipeline. It owns lightweight
+validation and row conversion, but not browser extraction or database writes.
+"""
 
 from __future__ import annotations
 
@@ -23,14 +28,14 @@ class ProductDTO:
     run_id: str | None = None
 
     def has_identity_match(self) -> bool:
-        # Direct/internal pages must expose the requested SKU unless explicitly marked unverified.
+        # Direct/internal pages must expose identity evidence before storage.
         return any(
             string_utils.contains_exact_lookup_token(value, self.code)
             for value in (self.title, self.url)
         )
 
     def has_price_signal(self) -> bool:
-        # Persistence requires at least one visible price signal.
+        # Persistence requires a price signal so analytics never ingest empty offers.
         if any(float(seller.get("price") or 0) > 0 for seller in self.sellers):
             return True
         return float(self.price or 0) > 0
@@ -52,14 +57,14 @@ class ProductDTO:
             "run_id": self.run_id,
         }
 
-        # Store a product-level row when no seller-level offers were extracted.
+        # Store a product-level row when the page exposes only a primary price.
         if not self.sellers:
             row = base.copy()
             row["marketplace"] = None
             row["price"] = self.price if self.price else None
             return [row]
 
-        # Expand seller offers while keeping sub-seller identity out of storage.
+        # Keep marketplace identity canonical and leave sub-seller noise out of storage.
         rows: list[dict[str, Any]] = []
         seen_storage_keys: set[tuple[str | None, float | None]] = set()
         for seller in self.sellers:

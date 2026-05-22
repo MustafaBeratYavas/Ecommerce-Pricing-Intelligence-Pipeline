@@ -1,14 +1,19 @@
-"""Convert raw scraper text into stable comparison and storage values."""
+"""Normalize scraper text for price parsing, identity matching, and URL comparison.
+
+These helpers keep localized marketplace text comparable across scraping,
+validation, persistence, and analytics code. They intentionally avoid browser or
+database side effects.
+"""
 
 import re
 
 
 def clean_price(price_text: str | None) -> float:
-    # Normalize Turkish-formatted prices before numeric conversion.
+    # Normalize localized price text before numeric conversion.
     if not price_text:
         return 0.0
 
-    # Remove currency tokens and whitespace noise.
+    # Remove currency tokens and whitespace noise before separator handling.
     cleaned = (
         price_text.replace("TL", "")
         .replace("tl", "")
@@ -28,13 +33,13 @@ def clean_price(price_text: str | None) -> float:
 
 
 def clean_text(text: str | None) -> str:
-    # Keep the marketplace label before any slash-delimited sub-seller suffix.
+    # Keep marketplace identity before slash-delimited sub-seller suffixes.
     if not text:
         return ""
     return text.split("/")[0].strip()
 
 
-# Turkish-to-ASCII map used for tolerant text matching.
+# Turkish-to-ASCII map used for tolerant product-code and label matching.
 _TR_MAP = str.maketrans(
     {
         "ç": "c",
@@ -54,7 +59,7 @@ _TR_MAP = str.maketrans(
 
 
 def to_ascii(text: str | None) -> str:
-    # Transliterate Turkish characters without changing the original casing.
+    # Preserve casing so callers can decide whether matching should be case-sensitive.
     if not text:
         return ""
     return text.translate(_TR_MAP)
@@ -68,7 +73,7 @@ def normalize_lookup_token(text: object) -> str:
 
 
 def contains_lookup_token(candidate: object, token: object) -> bool:
-    # Return True only when the normalized token appears in the candidate field.
+    # Use containment for broad fallback checks where exact SKU boundaries are unknown.
     normalized_token = normalize_lookup_token(token)
     if not normalized_token:
         return False
@@ -93,7 +98,7 @@ def contains_exact_lookup_token(candidate: object, token: object) -> bool:
 
 
 def canonicalize_url(url: str | None) -> str:
-    # Normalize URLs so equivalent product links compare cleanly.
+    # Strip volatile URL parts before comparing or caching product links.
     if not url:
         return ""
     trimmed = url.split("#", 1)[0].split("?", 1)[0]

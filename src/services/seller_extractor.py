@@ -1,4 +1,9 @@
-"""Parse marketplace and price data from detail pages and result cards."""
+"""Extract seller offer data from detail pages and compact result cards.
+
+SellerExtractor owns marketplace normalization, price selection, hidden-row
+expansion, and fallback parsing for offer lists. It mutates ProductDTO seller
+state but does not decide which product page is valid or when rows are persisted.
+"""
 
 import re
 import unicodedata
@@ -76,7 +81,7 @@ class SellerExtractor:
 
         self._scroll_to_top()
 
-        # Wait for the seller list to enter the DOM before collection starts.
+        # Wait for the seller list before mixing DOM and page-source fallbacks.
         try:
             container_sel = product_sel.get("sellers_list", "ul#PL, ul.pl_v9")
             list_wait = float(self._seller_collection_setting("list_wait_seconds", 5))
@@ -86,7 +91,7 @@ class SellerExtractor:
         except TimeoutException:
             self.logger.debug("Seller list container not found within timeout.")
 
-        # Expand hidden seller rows when the page exposes a load-more control.
+        # Expand hidden rows before counting stagnation across collection passes.
         self._expand_all_sellers(product_sel)
 
         for _pass_num in range(max_passes):
@@ -119,13 +124,11 @@ class SellerExtractor:
         self,
         product_sel: SelectorMap | None = None,
     ) -> None:
-        """Click the 'Daha fazla fiyat gör' button if it exists.
+        """Expand the seller list when the page exposes a load-more control.
 
-        Not every product page has this button.  When present it reveals
-        additional seller rows that were hidden behind a fold.  The method
-        simply attempts to find and click the button — it does **not** use
-        any expected-count heuristic because site-reported totals can
-        disagree with visible rows.
+        Product pages do not expose this control consistently, and reported
+        seller totals can disagree with visible rows. The method therefore
+        stops on visible-row stagnation instead of trusting an expected count.
         """
         product_sel = self._product_selectors(product_sel)
         max_clicks = int(self._seller_collection_setting("expand_max_clicks", 5))
@@ -158,7 +161,7 @@ class SellerExtractor:
                     *self._delay_range("expand_button_click", [0.3, 0.5])
                 )
 
-                # Use JavaScript click to avoid intercepted native clicks.
+                # Use JavaScript click because overlays often intercept native clicks.
                 self.driver.execute_script("arguments[0].click();", button)
                 clicks += 1
 
@@ -173,7 +176,7 @@ class SellerExtractor:
                 )
 
                 if current_count <= previous_count:
-                    # Stop when the click no longer reveals additional rows.
+                    # Stop when the control no longer reveals additional rows.
                     if self._find_expand_button() is None:
                         break
 

@@ -1,4 +1,4 @@
-"""Unit tests for operational command helpers."""
+"""Unit tests for setup tasks that prepare scraper runs."""
 
 from __future__ import annotations
 

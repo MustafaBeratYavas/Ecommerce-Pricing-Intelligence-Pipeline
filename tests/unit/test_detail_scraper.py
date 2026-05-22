@@ -1,4 +1,4 @@
-"""Unit tests for product detail metadata extraction."""
+"""Unit tests for product detail metadata extraction boundaries."""
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -35,7 +35,7 @@ class TestDetailScraper(unittest.TestCase):
 
         self.scraper._extract_price(dto, {"price": "span.pt"})
 
-        # Normalize localized price text into a float.
+        # Normalize localized price text into the DTO price contract.
         self.assertAlmostEqual(dto.price, 1500.0)
 
     def test_extract_price_no_element(self):
@@ -107,7 +107,7 @@ class TestDetailScraper(unittest.TestCase):
             patch("src.services.detail_scraper.random.random", return_value=0.5),
             patch("src.services.detail_scraper.time_utils"),
         ):
-            # A scrape succeeds when all field extractors complete.
+            # A scrape succeeds when all metadata extractors complete.
             result = self.scraper.scrape(dto)
             self.assertTrue(result)
 

@@ -1,4 +1,8 @@
-"""Shared abstract contract for strategic chart plotters."""
+"""Shared rendering contract for strategic analytics plotters.
+
+BasePlotter wraps each concrete chart in a consistent PlotArtifact so the
+reporting layer can stay independent of plot-specific implementation details.
+"""
 
 from __future__ import annotations
 
@@ -24,7 +28,7 @@ class BasePlotter(ABC):
     summary: str
 
     def render(self, dataset: AnalyticsDataset, engine: PlotEngine) -> PlotArtifact:
-        # Wrap concrete plot rendering in a stable artifact contract.
+        # Wrap concrete rendering in the artifact contract consumed by reports.
         fig = self.create_plot(dataset, engine)
         path = engine.save_figure(fig, self.filename)
         return PlotArtifact(

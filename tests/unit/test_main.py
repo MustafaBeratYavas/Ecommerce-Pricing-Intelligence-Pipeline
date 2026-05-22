@@ -1,4 +1,4 @@
-"""Unit tests for application bootstrap and fatal-error handling."""
+"""Unit tests for scraping pipeline bootstrap and fatal-error handling."""
 
 import tomllib
 import unittest
@@ -61,7 +61,7 @@ class TestMain(unittest.TestCase):
 
         main()
 
-        # Normal startup should build the processor and start the run loop.
+        # Normal startup should wire collaborators and hand control to the processor.
         mock_batch_cls.assert_called_once()
         mock_processor.run.assert_called_once_with(max_retries=3)
 

@@ -1,4 +1,4 @@
-"""Unit tests for browser lifecycle and configuration-driven startup."""
+"""Unit tests for browser lifecycle and configuration-backed startup."""
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -19,7 +19,7 @@ class TestBrowserEngine(unittest.TestCase):
         engine = BrowserEngine()
         engine.start = MagicMock()
         engine.driver = MagicMock()
-        # Entering the context should initialize the driver.
+        # The context boundary should hand callers an initialized driver.
         result = engine.__enter__()
         engine.start.assert_called_once()
         self.assertEqual(result, engine.driver)
@@ -29,7 +29,7 @@ class TestBrowserEngine(unittest.TestCase):
     def test_context_manager_exit_calls_stop(self, mock_logger, mock_config):
         engine = BrowserEngine()
         engine.stop = MagicMock()
-        # Exiting the context should stop and clear the driver.
+        # Exiting the context should always release the cached driver.
         engine.__exit__(None, None, None)
         engine.stop.assert_called_once()
 
@@ -99,7 +99,7 @@ class TestBrowserEngine(unittest.TestCase):
         mock_driver_instance = MagicMock()
         mock_driver_cls.return_value = mock_driver_instance
 
-        # Driver startup should honor mocked browser configuration values.
+        # Startup should translate config values into SeleniumBase arguments.
         engine.start()
 
         mock_driver_cls.assert_called_once()
@@ -150,7 +150,7 @@ class TestBrowserEngine(unittest.TestCase):
         engine.config = MagicMock()
         engine.config.get.side_effect = Exception("config fail")
 
-        # Startup failures should leave the engine without a cached driver.
+        # Failed startup should not leave a stale driver handle behind.
         with self.assertRaises(Exception):
             engine.start()
 

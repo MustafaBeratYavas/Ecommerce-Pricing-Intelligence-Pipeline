@@ -1,1 +1,1 @@
-"""Isolated unit tests for application modules."""
+"""Isolated unit tests for pipeline modules and service contracts."""

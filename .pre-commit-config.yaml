@@ -6,39 +6,36 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: ruff check --fix
-        language: python
-        additional_dependencies: [ruff==0.15.12]
+        entry: python -m ruff check --fix
+        language: system
         types_or: [python, pyi]
 
       - id: ruff-format
         name: ruff format
-        entry: ruff format
-        language: python
-        additional_dependencies: [ruff==0.15.12]
+        entry: python -m ruff format
+        language: system
         types_or: [python, pyi]
 
       - id: validate-toml
         name: validate toml syntax
         entry: python -c "import pathlib, sys, tomllib; [tomllib.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: python
+        language: system
         types: [toml]
 
       - id: validate-yaml
         name: validate yaml syntax
         entry: python -c "import pathlib, sys, yaml; [yaml.safe_load(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: python
-        additional_dependencies: [PyYAML==6.0.3]
+        language: system
         types: [yaml]
 
       - id: validate-json
         name: validate json syntax
         entry: python -c "import json, pathlib, sys; [json.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: python
+        language: system
         types: [json]
 
       - id: validate-editorconfig
         name: validate editorconfig syntax
         entry: python -c "import configparser, pathlib, sys; parser = configparser.ConfigParser(interpolation=None); [parser.read_string('[__root__]\n' + pathlib.Path(p).read_text(encoding='utf-8'), source=p) for p in sys.argv[1:]]"
-        language: python
+        language: system
         files: ^\.editorconfig$

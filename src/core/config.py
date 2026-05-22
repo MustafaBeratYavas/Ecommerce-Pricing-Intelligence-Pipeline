@@ -1,4 +1,10 @@
-"""Load project YAML configuration once and expose nested values."""
+"""Load configuration-backed behavior from the project YAML files.
+
+Config merges the base settings with optional environment overlays and nested
+environment-variable overrides, then exposes read-only lookup helpers for
+callers. It deliberately avoids owning validation rules for individual
+features; those remain at the service boundary that consumes each setting.
+"""
 
 import os
 from typing import Any
@@ -10,6 +16,7 @@ from src.definitions import ROOT_DIR
 
 class Config:
     _instance = None
+    _ENV_PREFIX = "PRICING_PIPELINE__"
     _CONFIG_FILES = (
         "settings.yaml",
         "browser.yaml",
@@ -31,7 +38,7 @@ class Config:
         config_dir = os.path.join(ROOT_DIR, "config")
         settings: dict[str, Any] = {}
         try:
-            for filename in self._CONFIG_FILES:
+            for filename in self._config_files_for_environment():
                 path = os.path.join(config_dir, filename)
                 if not os.path.exists(path):
                     continue
@@ -40,6 +47,7 @@ class Config:
                 if not isinstance(loaded, dict):
                     raise RuntimeError(f"{path} must contain a YAML mapping")
                 settings = self._deep_merge(settings, loaded)
+            self._apply_env_overrides(settings)
             self._settings = settings
         except Exception as e:
             raise RuntimeError(f"Failed to load project configuration: {e}")
@@ -83,3 +91,68 @@ class Config:
             else:
                 merged[key] = value
         return merged
+
+    @classmethod
+    def _config_files_for_environment(cls) -> tuple[str, ...]:
+        app_env = os.environ.get("APP_ENV", "").strip()
+        if not app_env:
+            return cls._CONFIG_FILES
+
+        if not app_env.replace("-", "").replace("_", "").isalnum():
+            raise RuntimeError("APP_ENV may only contain letters, numbers, '-' or '_'")
+
+        return (*cls._CONFIG_FILES, f"{app_env}.yaml")
+
+    @classmethod
+    def _apply_env_overrides(cls, settings: dict[str, Any]) -> None:
+        for name, value in os.environ.items():
+            if not name.startswith(cls._ENV_PREFIX):
+                continue
+
+            key_path = [
+                segment.strip().lower()
+                for segment in name.removeprefix(cls._ENV_PREFIX).split("__")
+                if segment.strip()
+            ]
+            if not key_path:
+                continue
+
+            cls._set_nested(settings, key_path, cls._parse_env_value(value))
+
+    @classmethod
+    def _set_nested(
+        cls,
+        settings: dict[str, Any],
+        key_path: list[str],
+        value: Any,
+    ) -> None:
+        current = settings
+        for key in key_path[:-1]:
+            child = current.get(key)
+            if not isinstance(child, dict):
+                child = {}
+                current[key] = child
+            current = child
+        current[key_path[-1]] = value
+
+    @staticmethod
+    def _parse_env_value(value: str) -> Any:
+        normalized = value.strip()
+        lowered = normalized.lower()
+
+        if lowered in {"true", "yes", "on"}:
+            return True
+        if lowered in {"false", "no", "off"}:
+            return False
+        if lowered in {"none", "null"}:
+            return None
+
+        try:
+            return int(normalized)
+        except ValueError:
+            pass
+
+        try:
+            return float(normalized)
+        except ValueError:
+            return value

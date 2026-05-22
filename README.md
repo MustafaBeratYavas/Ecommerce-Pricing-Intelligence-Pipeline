@@ -24,61 +24,66 @@ This repository implements an end-to-end data engineering and analytics pipeline
 
 The downstream analytics layer transforms the normalized offer table into product-level metrics such as seller depth, offer count, minimum price, maximum price, average price, price spread, and price tier. It then generates a compact portfolio of strategic charts that summarize marketplace price competition, product-level price dispersion, category outlier risk, seller-depth fragility, and portfolio price-tier composition.
 
-The current seed universe in `product_codes.txt` contains 50 unique Razer product codes: 25 mouse targets using the `RZ01` family and 25 headset targets using the `RZ04` family. Keyboard targets are intentionally not part of the active seed list.
-
 <details>
 <summary><b>Click to expand project structure details</b></summary>
 
 ```text
 .
-├── .github
-│   └── workflows
-│       └── ci.yml                        # Lint, test, and coverage workflow
-├── config
-│   ├── analysis.yaml                     # Analytics thresholds, chart style, category aliases, and plot behavior
-│   ├── browser.yaml                      # Browser runtime and target URL settings
-│   ├── marketplaces.yaml                 # Marketplace IDs, canonical aliases, and display aliases
-│   ├── scraping.yaml                     # Retry policy, scraping delays, fallback behavior, and seller collection tuning
-│   ├── selectors.yaml                    # DOM selector contracts for search, product, card, Google, and overlays
-│   └── settings.yaml                     # Paths, database, and observability defaults
-├── database
-│   ├── .gitkeep                          # Keeps the database directory available in fresh clones
-│   └── scraper.db                        # Versioned SQLite warehouse snapshot used by the analytics report
-├── logs
-│   └── .gitkeep                          # Keeps the runtime log directory available in fresh clones
-├── reports
-│   ├── charts                            # Generated strategic chart artifacts
-│   └── strategic_analysis_report.md      # Markdown inventory of generated analytics outputs
-├── src
-│   ├── analysis                          # Pandas/Matplotlib analytics and reporting layer
-│   │   ├── core                          # Read-only DB loading, dataset preparation, plotting engine, report writer
-│   │   └── plotters                      # Five strategic chart generators
-│   ├── core                              # Configuration, exceptions, logger, and shared definitions
-│   ├── engine                            # Browser lifecycle and batch queue orchestration
-│   ├── models                            # Product DTOs and database row conversion logic
-│   ├── services                          # Search, detail scraping, seller extraction, marketplace resolution, DB access
-│   ├── tasks                             # Operational helpers for browser profile creation and target seeding
-│   └── utils                             # Text, price, and timing helper functions
-├── tests
-│   ├── fixtures                          # Local HTML fixtures for selector and product identity contract tests
-│   ├── integration                       # Browser-facing tests that may need external runtime support
-│   ├── unit                              # Unit coverage for scraper, queue, DB, analytics, DTO, and task helpers
-│   └── conftest.py                       # Shared pytest fixtures for mocks, config stubs, and DTO instances
-├── .vscode
-│   ├── extensions.json                   # Recommended VS Code extensions for Python, Pylance, Ruff, and EditorConfig
-│   └── settings.json                     # Workspace interpreter, Pylance paths, and pytest defaults
-├── .editorconfig                         # Editor defaults for indentation, charset, whitespace, and line endings
-├── .gitattributes                        # Cross-platform line-ending rules for launch scripts
-├── .gitignore                            # Git exclusions for runtime artifacts and generated caches
-├── .pre-commit-config.yaml               # Local quality hooks for lint, format, and config syntax checks
-├── LICENSE                               # MIT license terms
-├── Makefile                              # Repeatable developer and CI command shortcuts
-├── pyproject.toml                        # Project metadata, build config, and dependency source of truth
-├── pyrightconfig.json                    # Pylance/Pyright import resolution and type analysis settings
-├── README.md                             # Project documentation
-├── product_codes.txt                     # Seed list of target product codes
-├── start.bat                             # Windows launcher for environment setup and scraper execution
-└── start.sh                              # Linux/macOS launcher for environment setup and scraper execution
+|-- .github
+|   `-- workflows
+|       `-- ci.yml                        # Lint, test, coverage, and Compose validation workflow
+|-- config
+|   |-- analysis.yaml                     # Analytics thresholds, chart style, category aliases, and plot behavior
+|   |-- browser.yaml                      # Browser runtime and target URL settings
+|   |-- docker.yaml                       # Container runtime overlay loaded with APP_ENV=docker
+|   |-- marketplaces.yaml                 # Marketplace IDs, canonical aliases, and display aliases
+|   |-- scraping.yaml                     # Retry policy, scraping delays, fallback behavior, and seller collection tuning
+|   |-- selectors.yaml                    # DOM selector contracts for search, product, card, Google, and overlays
+|   `-- settings.yaml                     # Paths, database, and observability defaults
+|-- docker
+|   `-- entrypoint.sh                     # Container command router for scraper, analytics, seed, test, and shell workflows
+|-- database
+|   |-- .gitkeep                          # Keeps the database directory available in fresh clones
+|   `-- scraper.db                        # Versioned SQLite warehouse snapshot used by the analytics report
+|-- logs
+|   `-- .gitkeep                          # Keeps the runtime log directory available in fresh clones
+|-- reports
+|   |-- charts                            # Generated strategic chart PNG artifacts
+|   `-- strategic_analysis_report.md      # Markdown inventory of generated analytics outputs
+|-- src
+|   |-- analysis
+|   |   |-- core                          # DB loading, dataset preparation, plotting engine, and report writer
+|   |   |-- plotters                      # Strategic chart generators
+|   |   |-- main.py                       # Analytics entrypoint
+|   |   `-- style_config.py               # Shared chart styling tokens
+|   |-- core                              # Configuration loader, exceptions, and logging
+|   |-- engine                            # Browser lifecycle and batch queue orchestration
+|   |-- models                            # Product DTOs and database row conversion logic
+|   |-- services                          # Search, detail scraping, seller extraction, marketplace resolution, and DB access
+|   |-- tasks                             # Browser profile creation and target seeding helpers
+|   |-- utils                             # String, timing, selector telemetry, and normalization telemetry helpers
+|   |-- definitions.py                    # Repository path definitions
+|   `-- main.py                           # Scraping pipeline entrypoint
+|-- tests
+|   |-- fixtures                          # Static HTML fixtures for selector and identity contract tests
+|   |-- integration                       # Browser-facing tests that may need external runtime support
+|   |-- unit                              # Fast unit coverage for config, services, engine, analytics, and tasks
+|   |-- conftest.py                       # Shared pytest fixtures and mocks
+|   `-- __init__.py
+|-- .dockerignore                         # Docker build context exclusions
+|-- .editorconfig                         # Editor defaults for indentation, charset, whitespace, and line endings
+|-- .env.example                          # Example Docker/Compose environment overrides
+|-- .gitattributes                        # Cross-platform line-ending rules
+|-- .gitignore                            # Git exclusions for runtime artifacts and generated caches
+|-- .pre-commit-config.yaml               # Local quality hooks for lint, format, and config syntax checks
+|-- Dockerfile                            # Multi-stage Chrome/Selenium Python runtime image
+|-- LICENSE                               # MIT license terms
+|-- Makefile                              # Repeatable Docker, developer, and CI command shortcuts
+|-- docker-compose.yml                    # Docker Desktop friendly application workflow
+|-- pyproject.toml                        # Project metadata, build config, and dependency source of truth
+|-- pyrightconfig.json                    # Pylance/Pyright import resolution and type analysis settings
+|-- README.md                             # Project documentation
+`-- product_codes.txt                     # Seed list of target product codes
 ```
 
 </details>
@@ -88,16 +93,16 @@ The current seed universe in `product_codes.txt` contains 50 unique Razer produc
 
 | Component | Technology | Purpose |
 |:---|:---|:---|
-| **Data Extraction** | SeleniumBase & Selenium | Browser automation, DOM traversal, search execution, and dynamic page interaction |
-| **Core Architecture** | Python 3.11+ | Pipeline orchestration, service boundaries, DTO modeling, and queue processing |
+| **Runtime** | Python 3.11+ | Pipeline orchestration, service boundaries, DTO modeling, queue processing, and packaged console entrypoints |
+| **Container Runtime** | Docker, Docker Compose & Google Chrome | Reproducible Chrome/Selenium runtime with bind-mounted database, logs, reports, config, and browser profile directories |
+| **Data Extraction** | SeleniumBase & Selenium | Browser automation, DOM traversal, search execution, dynamic page interaction, and seller card expansion |
+| **Persistence** | SQLite3 | Local relational warehouse for validated `products` snapshots and `target_products` queue state |
+| **Configuration** | PyYAML & environment overlays | Split YAML configuration, Docker-specific `APP_ENV` overlays, and `PRICING_PIPELINE__...` runtime overrides |
 | **Data Processing** | Pandas & NumPy | Snapshot filtering, product-level metric aggregation, price-tier assignment, and analytical transforms |
-| **Visualizations** | Matplotlib & Seaborn | Deterministic strategic chart generation |
-| **Persistence** | SQLite3 | Local relational warehouse for `products` snapshots and `target_products` queue state |
-| **Configuration** | PyYAML | Declarative selectors, browser configuration, search behavior, retry policy, and marketplace aliases |
-| **Testing & Coverage** | Pytest, pytest-cov & coverage.py | Unit regression tests, branch coverage measurement, XML coverage output, and an 80% coverage gate |
-| **Developer Experience** | VS Code workspace settings, Pylance/Pyright & EditorConfig | Stable interpreter discovery, source-path analysis, editor defaults, and recommended extensions |
-| **Code Quality** | Ruff & pre-commit | Python linting/formatting, TOML/YAML/JSON syntax validation, and EditorConfig syntax validation before commits |
-| **Automation & CI** | GNU Make, GitHub Actions & Codecov | Repeatable local/CI command targets, Python version matrix validation, and coverage report upload |
+| **Visualization** | Matplotlib & Seaborn | Deterministic strategic chart generation for reports and versioned analytics artifacts |
+| **Testing & Coverage** | Pytest, pytest-cov & coverage.py | Unit regression tests, browser-aware integration hooks, branch coverage, XML coverage output, and an 80% coverage gate |
+| **Code Quality** | Ruff, Pyright & pre-commit | Linting, formatting, import ordering, static analysis, and syntax validation before commits |
+| **Automation & CI** | GNU Make, GitHub Actions & Codecov | Repeatable local/CI command targets, Python version matrix validation, Compose config validation, and coverage report upload |
 
 </details>
 
@@ -106,6 +111,7 @@ The current seed universe in `product_codes.txt` contains 50 unique Razer produc
 - [Executive Conclusion & Business Impact](#executive-conclusion--business-impact)
 - [Dependencies](#dependencies)
 - [Quickstart](#quickstart)
+- [Docker Setup and Execution](#docker-setup-and-execution)
 - [Configuration](#configuration)
 - [Limitations & Disclaimers](#limitations--disclaimers)
 - [License](#license)
@@ -206,8 +212,7 @@ Install only the runtime dependencies when you only need to run the pipeline:
 python -m pip install .
 ```
 
-Install the development extras when you also need tests, linting, coverage, and
-pre-commit tooling:
+Install the development extras when you also need tests, linting, coverage, static analysis, and pre-commit tooling:
 
 ```bash
 python -m pip install ".[dev]"
@@ -215,45 +220,71 @@ python -m pip install ".[dev]"
 
 *Runtime dependencies: `seleniumbase`, `selenium`, `PyYAML`, `pandas`, `numpy`, `matplotlib`, `seaborn`.*
 
-*Development dependencies: `pytest`, `pytest-cov`, `pre-commit`, `ruff`.*
+*Development dependencies: `pytest`, `pytest-cov`, `pre-commit`, `pyright`, `ruff`.*
 
 ## Quickstart
 
 ### 1. Web Extraction
 
-Initialize the browser profile, seed target products from `product_codes.txt`, and process the queued codes. Validated offer snapshots are persisted into `database/scraper.db`.
+The web extraction workflow prepares a reusable browser profile, loads targets
+from `product_codes.txt`, and executes the scraping pipeline. Validated product
+and marketplace offer snapshots are persisted into `database/scraper.db` for
+downstream analytics.
 
-The active `product_codes.txt` file is expected to contain exactly 50 unique targets: 25 `RZ01-*` mouse codes and 25 `RZ04-*` headset codes. `RZ03` keyboard targets are no longer part of the default run.
-
-```bash
-# Full Linux/macOS setup and scraper run
-chmod +x start.sh
-./start.sh
-```
+#### Step 1 - Create Browser Profile:
 
 ```bash
-# Full Windows setup and scraper run
-start.bat
-```
-
-```bash
-# Manual run after dependency installation
 python -m src.tasks.create_profile
+```
+
+#### Step 2 - Seed Product Targets:
+
+```bash
 python -m src.tasks.seed_targets --file product_codes.txt
+```
+
+#### Step 3 - Run Scraping Pipeline:
+
+```bash
 python -m src.main
 ```
 
 ### 2. Strategic Analytics Engine
 
-Run the analytics engine after product snapshots are available. It rebuilds the strategic chart portfolio and refreshes `reports/strategic_analysis_report.md` from the latest validated dataset.
+The analytics engine should be run after product snapshots are available. It
+reads the latest validated warehouse state, rebuilds the strategic chart
+portfolio under `reports/charts/`, and refreshes
+`reports/strategic_analysis_report.md` from the current dataset.
 
 ```bash
 python -m src.analysis.main
 ```
 
+## Docker Setup and Execution
+
+Docker is the recommended runtime when you want a reproducible Chrome/Selenium environment without installing browser automation dependencies directly on the host machine.
+
+### 1. Build the Image
+
+```bash
+docker compose build
+```
+
+### 2. Run the Pipeline
+
+```bash
+docker compose up --build ecommerce-pricing-intelligence-pipeline
+```
+
+### 3. Run Tests
+
+```bash
+docker compose run --rm ecommerce-pricing-intelligence-pipeline test
+```
+
 ## Configuration
 
-Runtime behavior is loaded from the YAML files in `config/`. `settings.yaml` keeps common path, database, and observability defaults, while domain-specific files keep browser, scraping, selector, marketplace, and analytics settings outside Python code. The loader deep-merges these files, so application code still reads a single logical configuration tree through `Config.get(...)`.
+Runtime behavior is loaded from the YAML files in `config/`. `settings.yaml` keeps common path, database, and observability defaults, while domain-specific files keep browser, scraping, selector, marketplace, and analytics settings outside Python code. The loader deep-merges these files, applies the overlay selected by `APP_ENV` when present, such as `config/docker.yaml`, and then applies `PRICING_PIPELINE__...` environment overrides, so application code still reads a single logical configuration tree through `Config.get(...)`.
 
 | Section | Key Parameters | Description |
 |:---|:---|:---|
@@ -307,4 +338,4 @@ Category and marketplace normalization telemetry is written to `logs/normalizati
 
 This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for full terms.
 
-Copyright (c) 2026 **Mustafa Berat Yavaş**
+Copyright (c) 2026 **Mustafa Berat Yavas**

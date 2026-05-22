@@ -1,10 +1,15 @@
-"""Read product codes from a text file and enqueue them for scraping."""
+"""Seed product targets into the scraper queue from a text file.
+
+The task normalizes and deduplicates manual product-code lists, then delegates
+queue insertion and requeue semantics to DatabaseService. It does not scrape or
+validate product pages.
+"""
 
 import argparse
 import os
 import sys
 
-# Allow direct execution from the repository root without installation.
+# Support direct source-tree execution while preserving absolute package imports.
 if __name__ == "__main__" and __package__ is None:
     current_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.dirname(os.path.dirname(current_dir))
@@ -14,7 +19,7 @@ from src.services.database import DatabaseService
 
 
 def seed_from_file(file_path: str) -> None:
-    # Load, normalize, deduplicate, and enqueue product codes.
+    # Normalize the manual list before touching persistent queue state.
     if not os.path.exists(file_path):
         print(f"Error: Input file not found at '{file_path}'")
         sys.exit(1)
@@ -38,7 +43,7 @@ def seed_from_file(file_path: str) -> None:
 
         print(f"Read {len(unique_codes)} unique product codes from {file_path}")
 
-        # Persist the cleaned code list and requeue existing targets for a new run.
+        # Persist the cleaned list and requeue existing targets for a fresh run.
         with DatabaseService() as db:
             synchronized = 0
             for code in unique_codes:
@@ -59,7 +64,7 @@ def seed_from_file(file_path: str) -> None:
 
 
 def main():
-    # Parse CLI arguments and seed the queue.
+    # Keep CLI parsing separate from queue mutation for testability.
     parser = argparse.ArgumentParser(
         description="E-Commerce Pricing Intelligence Pipeline - Database Seeding Utility",
         formatter_class=argparse.RawTextHelpFormatter,

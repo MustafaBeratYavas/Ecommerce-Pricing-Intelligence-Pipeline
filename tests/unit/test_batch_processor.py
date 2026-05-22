@@ -1,4 +1,4 @@
-"""Unit tests for queue handling, retry logic, and persistence delegation."""
+"""Unit tests for queue progression, retry handling, and persistence delegation."""
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -13,7 +13,7 @@ class TestBatchProcessor(unittest.TestCase):
         self.mock_db = MagicMock()
         self.mock_scraper = MagicMock()
 
-        # Isolate the processor from real database and scraper implementations.
+        # Isolate queue orchestration from real database and scraper implementations.
         with patch("src.engine.batch_processor.Logger"):
             self.processor = BatchProcessor(self.mock_db, self.mock_scraper)
             self.mock_logger = MagicMock()

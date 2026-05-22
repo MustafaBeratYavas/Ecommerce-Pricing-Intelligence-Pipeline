@@ -1,0 +1,16 @@
+browser:
+  headless: true
+  user_data_dir: ".browser_profile"
+  profile_name: "Default"
+
+paths:
+  database: "database/scraper.db"
+  logs_dir: "logs"
+  reports_dir: "reports"
+  charts_dir: "reports/charts"
+
+observability:
+  selector_usage:
+    output_path: "logs/selector_usage_latest.json"
+  normalization_usage:
+    output_path: "logs/normalization_usage_latest.json"

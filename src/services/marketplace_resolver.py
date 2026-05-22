@@ -1,4 +1,10 @@
-"""Resolve raw seller labels and marketplace IDs into canonical names."""
+"""Canonicalize noisy seller labels into marketplace identities.
+
+MarketplaceResolver applies configured aliases, known marketplace IDs, and
+conservative text cleanup before seller offers reach persistence or analytics.
+It preserves marketplace-level identity and deliberately discards sub-seller
+noise that would fragment comparisons.
+"""
 
 from __future__ import annotations
 
@@ -22,7 +28,7 @@ class MarketplaceResolver:
         ".io",
     )
 
-    # Noise fragments commonly attached to seller labels.
+    # Noise fragments that describe seller metadata rather than marketplace identity.
     _NOISE_PATTERNS = [
         r"\d+[.,]\d+\s+\d+\s+Yorum",
         r"\d+\s+Yorum",
@@ -46,7 +52,7 @@ class MarketplaceResolver:
 
         alias_map = self._get_marketplace_name_aliases()
 
-        # Check aliases against raw input before destructive cleanup.
+        # Check aliases against raw input before cleanup removes useful signals.
         raw_key = self._normalize_key(raw_name.split("/")[0].strip())
         if raw_key in alias_map:
             alias, canonical = alias_map[raw_key]
@@ -102,21 +108,21 @@ class MarketplaceResolver:
     # Private cleaning helpers.
 
     def _strip_noise(self, raw_text: str | None) -> str:
-        # Remove sub-seller info, ratings, reviews, and domain suffixes.
+        # Remove fragments that would create false marketplace variants.
         if not raw_text:
             return ""
 
-        # Discard everything after the first slash because it represents sub-seller identity.
+        # Discard slash suffixes because they represent sub-seller identity.
         text = raw_text.split("/")[0].strip()
 
-        # Run each compiled noise pattern against the text.
+        # Strip configured noise patterns before alias resolution retries.
         for pattern in self._compiled_noise:
             text = pattern.sub("", text)
 
         # Strip standard domain suffixes.
         text = self._strip_domain_suffix(text.strip())
 
-        # Collapse any leftover whitespace.
+        # Collapse leftover whitespace so aliases compare against stable tokens.
         return re.sub(r"\s+", " ", text).strip()
 
     def _strip_domain_suffix(self, name: str) -> str:

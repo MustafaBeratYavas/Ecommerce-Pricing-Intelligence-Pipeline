@@ -1,4 +1,4 @@
-"""Unit tests for strategic analysis plot rendering contracts."""
+"""Unit tests for strategic plotter artifact and layout contracts."""
 
 from __future__ import annotations
 

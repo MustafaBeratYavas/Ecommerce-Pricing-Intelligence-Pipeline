@@ -1,4 +1,9 @@
-"""Marketplace lowest-price win-rate heatmap."""
+"""Render marketplace lowest-price win rates by category.
+
+This plotter measures where marketplaces win the minimum-price position across
+verified active offers. It splits tied wins and normalizes by category size so
+the heatmap compares categories fairly.
+"""
 
 from __future__ import annotations
 
@@ -33,7 +38,7 @@ class MarketplaceAggressivenessPlotter(BasePlotter):
             engine.finalize_axes(ax, self.title)
             return fig
 
-        # Split credit across marketplaces tied for the same product's lowest price.
+        # Split credit across marketplaces tied for one product's lowest price.
         df["lowest_price"] = df.groupby("product_code")["price"].transform("min")
         winners = df.loc[df["price"] == df["lowest_price"]].copy()
         winners["tie_count"] = winners.groupby("product_code")["marketplace"].transform(

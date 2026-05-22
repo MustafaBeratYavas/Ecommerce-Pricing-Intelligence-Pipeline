@@ -1,4 +1,9 @@
-"""Shared file and console logging configuration."""
+"""Configure process-wide file and console logging.
+
+Logger creates one run-scoped log file plus a concise console stream, then
+returns named loggers for pipeline components. It centralizes handler setup so
+service modules do not compete over logging configuration.
+"""
 
 import logging
 import os
@@ -14,14 +19,14 @@ class Logger:
 
     @staticmethod
     def setup() -> None:
-        # Configure logging once for the current process.
+        # Configure logging once so repeated service construction stays idempotent.
         if Logger._configured:
             return
 
         config = Config()
         log_dir = config.get("paths", "logs_dir", default="logs")
 
-        # Create the log directory before opening any handlers.
+        # Create the log directory before handlers attempt to open files.
         full_log_path = os.path.join(ROOT_DIR, log_dir)
         os.makedirs(full_log_path, exist_ok=True)
 
@@ -77,5 +82,5 @@ class Logger:
 
     @staticmethod
     def get_logger(name: str) -> logging.Logger:
-        # Return a named logger under the shared configuration.
+        # Keep callers on named loggers while sharing the process-wide handlers.
         return logging.getLogger(name)

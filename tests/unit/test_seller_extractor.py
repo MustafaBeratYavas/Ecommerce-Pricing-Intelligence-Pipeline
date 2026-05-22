@@ -1,4 +1,4 @@
-"""Unit tests for seller identification, price parsing, expansion, and deduplication."""
+"""Unit tests for seller offer extraction, expansion, and deduplication."""
 
 import unittest
 from unittest.mock import MagicMock, patch

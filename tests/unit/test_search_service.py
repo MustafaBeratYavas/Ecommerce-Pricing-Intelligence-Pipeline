@@ -1,4 +1,4 @@
-"""Unit tests for internal search, fallback search, and no-result detection."""
+"""Unit tests for browser search flows and no-result detection."""
 
 import unittest
 from unittest.mock import MagicMock, patch

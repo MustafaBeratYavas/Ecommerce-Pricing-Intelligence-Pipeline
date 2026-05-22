@@ -1,4 +1,4 @@
-"""Unit tests for shared logging configuration."""
+"""Unit tests for idempotent shared logging configuration."""
 
 import logging
 

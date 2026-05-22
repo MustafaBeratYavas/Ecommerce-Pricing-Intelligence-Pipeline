@@ -1,4 +1,10 @@
-"""Orchestrate product resolution, extraction, and fallback search paths."""
+"""Coordinate product resolution across direct URLs, internal search, and fallback search.
+
+ScraperService owns the high-level decision flow for resolving a ProductDTO,
+delegating page parsing, seller offer extraction, search, and database lookups
+to specialized collaborators. It validates product-code evidence before
+allowing downstream persistence or reporting.
+"""
 
 from urllib.parse import urlparse
 
@@ -40,7 +46,7 @@ class ScraperService:
         self.database = database
         self._seen_url_codes: dict[str, set[str]] = {}
 
-        # Inject collaborators so scraping, search, and parsing remain testable.
+        # Keep collaborators injected so resolution paths remain unit-testable.
         self.search = search_service
         self.detail = detail_scraper
         self.seller = seller_extractor
@@ -49,13 +55,13 @@ class ScraperService:
         # Attempt resolution strategies in order of confidence.
         self.logger.info(f"[{dto.code}] Processing...")
 
-        # Strategy 1: reuse a known product URL when one is available.
+        # Stored URLs are highest confidence but still must pass identity checks.
         if dto.url and "akakce.com" in dto.url:
             if self._try_direct_url(dto):
                 self._validate_resolved_product(dto)
                 return dto
 
-        # Strategy 2: search the primary marketplace directly.
+        # Native marketplace search keeps resolution inside the target domain.
         try:
             if self.search.search_internal(dto.code):
                 if self._analyze_internal_results(dto.code, dto):
@@ -64,7 +70,7 @@ class ScraperService:
         except ScraperError as exc:
             self.logger.error(f"[{dto.code}] Internal search error: {exc}")
 
-        # Strategy 3: use the fallback search engine as a last resort.
+        # Fallback search is last because it has the broadest matching surface.
         self.logger.info(f"[{dto.code}] Switching to fallback search.")
         self._try_google_search(dto)
 
@@ -72,7 +78,7 @@ class ScraperService:
         return dto
 
     def _try_direct_url(self, dto: ProductDTO) -> bool:
-        # Navigate directly to a known URL and extract only if the page validates.
+        # Revalidate stored URLs because marketplace pages can drift between runs.
         self.logger.info(f"[{dto.code}] Source URL found. Attempting direct access.")
         try:
             assert dto.url is not None, "Direct URL called with no URL set"
@@ -88,7 +94,7 @@ class ScraperService:
         return False
 
     def _analyze_internal_results(self, code: str, dto: ProductDTO) -> bool:
-        # Inspect the result page and route card/detail layouts to the right extractor.
+        # Route result layouts without assuming the marketplace renders one shape.
         try:
             items = self.search.get_result_items()
             if not items:
@@ -96,7 +102,7 @@ class ScraperService:
 
             matched_by_code, selected_item = self._select_internal_result(items, code)
 
-            # Validate that the chosen result exposes a recognizable title.
+            # Require a title signal before trusting a selected result element.
             title_sel = self.config.get("selectors", "search_result_title")
             selected_item.find_element(By.CSS_SELECTOR, title_sel)
             selector_usage.record_match(
@@ -106,7 +112,7 @@ class ScraperService:
                 "ScraperService._analyze_internal_results",
             )
 
-            # Carry category context from the result page when available.
+            # Preserve result-page category context when detail pages omit it.
             if not dto.category:
                 try:
                     cat_links = self.driver.find_elements(
@@ -147,7 +153,7 @@ class ScraperService:
                 )
                 return False
 
-            # Distinguish compact card results from detail-page redirects.
+            # Separate compact cards from navigable detail pages before extraction.
             class_attr = selected_item.get_attribute("class") or ""
             selected_href = self._get_result_href(selected_item)
             is_redirect = "n-p" in class_attr or not self._is_akakce_detail_url(
@@ -172,7 +178,7 @@ class ScraperService:
         dto: ProductDTO,
         code: str,
     ) -> bool:
-        # Extract compact card results inline without navigating away.
+        # Compact result cards expose enough offer data to avoid extra navigation.
         self._extract_card_data(element, dto, code)
         dto.source = "internal_card"
         dto.page_match_verified = self._page_matches_code(dto)
@@ -190,11 +196,11 @@ class ScraperService:
         dto: ProductDTO,
         code: str,
     ) -> bool:
-        # Click through detail-type results before running the full extractor.
+        # Detail results require navigation before the full extractor can run.
         link = element.find_element(By.TAG_NAME, "a")
         self.driver.execute_script("arguments[0].click();", link)
 
-        # Wait for the detail page content to render.
+        # Wait for identity content rather than relying on navigation completion.
         try:
             page_switch_delays = self.config.get(
                 "delays", "page_switch", default=[5.0, 6.0]
@@ -211,7 +217,7 @@ class ScraperService:
         except TimeoutException:
             self.logger.debug(f"[{code}] Detail page load wait timeout.")
 
-        # Cache the resolved URL for future direct access.
+        # Cache the resolved URL only after the selected result has loaded.
         dto.url = self.driver.current_url
 
         if not self._scrape_and_extract(dto, source_label="internal_detail"):
@@ -222,7 +228,7 @@ class ScraperService:
         return True
 
     def _try_google_search(self, dto: ProductDTO) -> None:
-        # Iterate fallback candidates until one yields valid offer data.
+        # Iterate fallback candidates until one yields validated offer data.
         try:
             urls = self.search.search_google(dto.code, dto.brand)
             preferred_urls = [
@@ -245,7 +251,7 @@ class ScraperService:
                         )
                     self.driver.get(url)
 
-                    # Wait for the target page to load before extraction.
+                    # Wait for the target identity field before extraction starts.
                     try:
                         google_switch_delays = self.config.get(
                             "delays", "google_switch", default=[5.0, 6.0]
@@ -294,7 +300,7 @@ class ScraperService:
         allow_unverified_code_match: bool = False,
         source_label: str = "resolved page",
     ) -> bool:
-        # Run the shared extraction pipeline: metadata first, seller offers second.
+        # Extract metadata before seller offers so DTO identity is available.
         try:
             if not self.detail.scrape(dto):
                 return False
@@ -330,7 +336,7 @@ class ScraperService:
         dto: ProductDTO,
         code: str,
     ) -> None:
-        # Pull title and seller data directly from a card element without navigation.
+        # Card extraction stays local to avoid replacing the current result page.
         try:
             title_sel = self.config.get("selectors", "search_result_title")
             dto.title = element.find_element(By.CSS_SELECTOR, title_sel).text.strip()

@@ -1,4 +1,8 @@
-"""Shared pytest fixtures for driver mocks, config stubs, and DTO instances."""
+"""Shared pytest fixtures for browser doubles, config stubs, and DTO state.
+
+Fixtures here keep service tests focused on orchestration boundaries without
+starting real browser sessions or touching production configuration.
+"""
 
 from unittest.mock import MagicMock
 
@@ -19,7 +23,7 @@ def mock_driver():
 
 @pytest.fixture
 def mock_config():
-    # Return empty dictionaries for selector lookups unless a test overrides them.
+    # Default selector lookups to empty maps so tests opt into required config.
     config = MagicMock(spec=Config)
     config.get.return_value = {}
     return config
@@ -27,7 +31,7 @@ def mock_config():
 
 @pytest.fixture
 def sample_dto():
-    # Pre-populate the fields used by end-to-end scraper service tests.
+    # Pre-populate fields shared by scraper orchestration tests.
     return ProductDTO(
         code="TEST-001",
         brand="Razer",

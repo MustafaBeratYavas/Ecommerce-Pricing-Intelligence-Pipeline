@@ -1,4 +1,4 @@
-"""Unit tests for DTO validation and database row conversion."""
+"""Unit tests for ProductDTO validation and database row projection."""
 
 import unittest
 from datetime import date
@@ -11,7 +11,7 @@ class TestProductDTO(unittest.TestCase):
         dto = ProductDTO(code="P001", brand="Razer", price=500.0)
         rows = dto.to_db_rows()
 
-        # A product without seller offers should produce one product-level row.
+        # A primary price without seller offers should still produce one row.
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["product_code"], "P001")
         self.assertEqual(rows[0]["brand"], "Razer")
@@ -47,7 +47,7 @@ class TestProductDTO(unittest.TestCase):
 
     def test_no_sellers_no_price_returns_none_price(self):
         dto = ProductDTO(code="P004")
-        # Empty price signals should normalize to a zero-price row.
+        # Empty price signals should normalize to the zero-price row contract.
         rows = dto.to_db_rows()
 
         self.assertEqual(rows[0]["brand"], "Razer")

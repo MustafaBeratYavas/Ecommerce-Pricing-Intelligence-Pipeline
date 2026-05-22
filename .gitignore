@@ -1,18 +1,24 @@
-# Python artifacts
+# Python bytecode and native build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-*.egg-info/
-*.egg
-dist/
-build/
 
-# Virtual environments and local configuration
-venv/
+# Python packaging outputs
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments and local environment files
 .venv/
+venv/
 env/
 .env
+.env.*
+!.env.example
 
 # IDE and editor metadata
 .vscode/*
@@ -20,17 +26,21 @@ env/
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+.project
+.settings/
 *.swp
 *.swo
 *~
-.project
-.settings/
 
-# Test and coverage outputs
+# Test, lint, type-check, and coverage outputs
 .pytest_cache/
 .pytest_tmp*/
 .ruff_cache/
 .pre-commit-cache/
+.pyright/
+.mypy_cache/
+.tox/
+.nox/
 .coverage
 .coverage.*
 coverage.xml
@@ -39,23 +49,9 @@ htmlcov/
 
 # Application runtime data
 .browser_profile/
-logs/*
 downloaded_files/
-
+logs/*
 !logs/.gitkeep
-!database/.gitkeep
-
-# Operating system metadata
-Thumbs.db
-.DS_Store
-desktop.ini
-
-# Temporary files
-*.log
-*.tmp
-_test_output.txt
-_test_output/
-test_results.txt
 
 # Local database files; keep the canonical analytics warehouse versioned
 *.db
@@ -64,3 +60,16 @@ test_results.txt
 *.db-shm
 *.sqlite
 *.sqlite3
+!database/.gitkeep
+
+# Temporary and local diagnostic files
+*.log
+*.tmp
+_test_output.txt
+_test_output/
+test_results.txt
+
+# Operating system metadata
+Thumbs.db
+.DS_Store
+desktop.ini

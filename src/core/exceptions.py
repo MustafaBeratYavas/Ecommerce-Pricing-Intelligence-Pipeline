@@ -1,4 +1,9 @@
-"""Application-specific exception hierarchy for runtime layers."""
+"""Exception taxonomy for pipeline boundaries.
+
+These types let orchestration code distinguish browser, scraping, data-quality,
+configuration, and persistence failures without coupling callers to low-level
+library exceptions.
+"""
 
 
 class ScraperError(Exception):

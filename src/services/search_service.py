@@ -1,4 +1,9 @@
-"""Internal marketplace search and fallback discovery workflows."""
+"""Search workflows used by product resolution.
+
+SearchService owns browser interactions for native marketplace search and
+fallback discovery queries. It returns page state or candidate URLs only;
+product validation and seller offer extraction remain in ScraperService.
+"""
 
 from urllib.parse import urlparse
 
@@ -26,7 +31,7 @@ class SearchService:
         self.logger = Logger.get_logger(__name__)
 
     def _type_human_like(self, element, text: str) -> None:
-        # Type with per-character jitter to keep input verification reliable.
+        # Pace typing so the site's input handlers reliably observe each character.
         element.clear()
         element.send_keys(Keys.CONTROL, "a")
         element.send_keys(Keys.BACKSPACE)
@@ -35,7 +40,7 @@ class SearchService:
             time_utils.random_sleep(*self.config.get("delays", "typing"))
 
     def _type_and_confirm_internal_query(self, element, code: str) -> bool:
-        # Re-type until the search box contains the exact target code.
+        # Re-type until the page confirms the exact code, not a partial input.
         verify_timeout = self.config.get(
             "scraping", "input_verification_timeout", default=2.0
         )
@@ -64,7 +69,7 @@ class SearchService:
     def _find_search_box(
         self, selector: str, selector_path: str = "runtime.search_box"
     ):
-        # Wait until the search input is clickable and ready for typing.
+        # Wait for interactability because the input can exist before it is usable.
         try:
             element = self.wait.until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
@@ -80,7 +85,7 @@ class SearchService:
             raise NetworkError(f"Search box not clickable: {selector}")
 
     def check_no_result(self) -> bool:
-        # Treat no-result and suggestion pages as failed internal matches.
+        # Treat suggestion pages as soft failures rather than product matches.
         try:
             no_res_sel = self.config.get("selectors", "search_no_result")
             elements = self.driver.find_elements(By.CSS_SELECTOR, no_res_sel)
@@ -103,7 +108,7 @@ class SearchService:
             return False
 
     def search_internal(self, code: str) -> bool:
-        # Run the site's native search flow for a product code.
+        # Native search keeps the browser on the marketplace when possible.
         base_url = self.config.get("urls", "base", default="https://www.akakce.com")
         current = self.driver.current_url.lower()
 
@@ -136,7 +141,7 @@ class SearchService:
         return True
 
     def search_google(self, code: str, brand: str | None = None) -> list[str]:
-        # Run the fallback query and collect candidate product URLs.
+        # Fallback search returns candidates; it does not validate product identity.
         brand = brand or self.config.get("scraping", "default_brand", default="Razer")
         search_url = self.config.get("urls", "search", default="https://www.google.com")
         self.driver.get(search_url)
@@ -187,7 +192,7 @@ class SearchService:
         return akakce_urls
 
     def get_result_items(self):
-        # Return raw search result cards from the current results page.
+        # Return raw cards so the orchestrator can choose the safest match.
         list_sel = self.config.get("selectors", "search_result_item")
         items = self.driver.find_elements(By.CSS_SELECTOR, list_sel)
         selector_usage.record_match(

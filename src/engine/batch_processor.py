@@ -1,4 +1,10 @@
-"""Queue processor that scrapes products and persists valid offer rows."""
+"""Drive queued product scraping and persistence status transitions.
+
+BatchProcessor owns product-queue progression, retry accounting, and snapshot
+replacement boundaries. It delegates page resolution and seller offer
+extraction to ScraperService and keeps database writes grouped around validated
+ProductDTO rows.
+"""
 
 from src.core.config import Config
 from src.core.exceptions import DatabaseError, DataQualityError
@@ -20,7 +26,7 @@ class BatchProcessor:
         self.logger = Logger.get_logger(__name__)
 
     def run(self, max_retries: int = 3) -> None:
-        # Process queued product codes sequentially to keep browser state predictable.
+        # Process sequentially because a single browser session backs the run.
         self.logger.info("Starting ETL pipeline using Database Task Queue.")
         if hasattr(self.database, "reset_stale_in_progress"):
             recovered = self.database.reset_stale_in_progress()
@@ -71,12 +77,12 @@ class BatchProcessor:
                 success_count += 1
 
             except DatabaseError as exc:
-                # Database failures are treated as retryable because writes can be transient.
+                # Database failures stay retryable because local locks can be transient.
                 self.logger.error(f"{log_prefix} {code} - DB error: {exc}")
                 self.database.update_target_status(t_id, "PENDING", err_count + 1)
                 failed_attempt_count += 1
             except Exception as exc:
-                # Scraper failures retry until the target reaches its configured budget.
+                # Scraper failures consume the configured per-target retry budget.
                 self.logger.error(f"{log_prefix} {code} - Scraper error: {exc}")
                 new_err_count = err_count + 1
                 if new_err_count >= max_retries:

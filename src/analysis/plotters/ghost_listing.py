@@ -1,6 +1,13 @@
-"""Category price distribution and outlier risk chart."""
+"""Render category-level price distribution and outlier exposure.
+
+The plotter highlights unusually high offers within each category using the
+prepared latest active offers dataset. It owns chart semantics only; threshold
+settings come from configuration and data validity comes from DataProcessor.
+"""
 
 from __future__ import annotations
+
+from typing import cast
 
 import pandas as pd
 import seaborn as sns
@@ -20,7 +27,7 @@ class GhostListingPlotter(BasePlotter):
     def create_plot(self, dataset: AnalyticsDataset, engine: PlotEngine):
         df = dataset.latest_active_offers.copy()
         fig, ax = engine.create_figure()
-        # Load outlier sensitivity and sampling controls from analysis config.
+        # Load sensitivity and sampling controls from analysis config.
         settings = Config().get("analysis", "outlier_detection", default={}) or {}
         iqr_multiplier = float(settings.get("iqr_multiplier", 1.5))
         sample_size = int(settings.get("sample_size_per_category", 120))
@@ -38,12 +45,10 @@ class GhostListingPlotter(BasePlotter):
             return fig
 
         # Order categories by median price so the distribution is easy to scan.
-        order = (
-            df.groupby("product_category")["price"]
-            .median()
-            .sort_values()
-            .index.tolist()
+        category_medians = cast(
+            pd.Series, df.groupby("product_category")["price"].median()
         )
+        order = category_medians.sort_values().index.tolist()
 
         sns.boxplot(
             data=df,
@@ -58,8 +63,9 @@ class GhostListingPlotter(BasePlotter):
             ax=ax,
             legend=False,
         )
-        if ax.legend_ is not None:
-            ax.legend_.remove()
+        legend = ax.get_legend()
+        if legend is not None:
+            legend.remove()
 
         sample = pd.concat(
             [
@@ -68,7 +74,7 @@ class GhostListingPlotter(BasePlotter):
             ],
             ignore_index=True,
         )
-        # Overlay a bounded sample of offers to show density without overcrowding.
+        # Bound the overlay sample so density is visible without overcrowding.
         sns.swarmplot(
             data=sample,
             y="product_category",

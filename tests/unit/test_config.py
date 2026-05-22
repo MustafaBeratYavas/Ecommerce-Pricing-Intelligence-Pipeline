@@ -1,9 +1,19 @@
-"""Unit tests for configuration singleton behavior."""
+"""Unit tests for configuration loading, overlays, and singleton reset behavior."""
+
+import os
 
 from src.core.config import Config
 
 
-def test_config_get_preserves_falsy_values():
+def _clear_config_environment(monkeypatch):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    for name in list(os.environ):
+        if name.startswith("PRICING_PIPELINE__"):
+            monkeypatch.delenv(name, raising=False)
+
+
+def test_config_get_preserves_falsy_values(monkeypatch):
+    _clear_config_environment(monkeypatch)
     Config.reset_instance()
     try:
         config = Config()
@@ -12,7 +22,8 @@ def test_config_get_preserves_falsy_values():
         Config.reset_instance()
 
 
-def test_config_loads_split_yaml_files():
+def test_config_loads_split_yaml_files(monkeypatch):
+    _clear_config_environment(monkeypatch)
     Config.reset_instance()
     try:
         config = Config()
@@ -26,7 +37,8 @@ def test_config_loads_split_yaml_files():
         Config.reset_instance()
 
 
-def test_reset_instance_discards_existing_instance_settings():
+def test_reset_instance_discards_existing_instance_settings(monkeypatch):
+    _clear_config_environment(monkeypatch)
     Config.reset_instance()
     try:
         first = Config()
@@ -37,5 +49,38 @@ def test_reset_instance_discards_existing_instance_settings():
 
         assert second is not first
         assert second.get("temporary", "value") is None
+    finally:
+        Config.reset_instance()
+
+
+def test_config_applies_environment_overrides(monkeypatch):
+    _clear_config_environment(monkeypatch)
+    monkeypatch.setenv("PRICING_PIPELINE__browser__headless", "true")
+    monkeypatch.setenv("PRICING_PIPELINE__database__busy_timeout_ms", "12000")
+    monkeypatch.setenv("PRICING_PIPELINE__scraping__retries", "1")
+    monkeypatch.setenv("PRICING_PIPELINE__paths__logs_dir", "container-logs")
+
+    Config.reset_instance()
+    try:
+        config = Config()
+
+        assert config.get("browser", "headless") is True
+        assert config.get("database", "busy_timeout_ms") == 12000
+        assert config.get("scraping", "retries") == 1
+        assert config.get("paths", "logs_dir") == "container-logs"
+    finally:
+        Config.reset_instance()
+
+
+def test_config_loads_app_env_overlay(monkeypatch):
+    _clear_config_environment(monkeypatch)
+    monkeypatch.setenv("APP_ENV", "docker")
+
+    Config.reset_instance()
+    try:
+        config = Config()
+
+        assert config.get("browser", "headless") is True
+        assert config.get("browser", "profile_name") == "Default"
     finally:
         Config.reset_instance()

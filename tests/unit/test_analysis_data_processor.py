@@ -1,4 +1,4 @@
-"""Unit tests for analytics data-quality filtering and report output."""
+"""Unit tests for analytics dataset preparation and report path behavior."""
 
 import os
 import shutil

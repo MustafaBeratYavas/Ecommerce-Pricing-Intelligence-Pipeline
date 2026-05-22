@@ -1,0 +1,69 @@
+# Version control and repository automation not needed in the image
+.git/
+.github/
+.gitignore
+
+# Local editor and workspace metadata
+.vscode/
+.idea/
+.project
+.settings/
+*.swp
+*.swo
+*~
+
+# Python caches, packaging outputs, and quality-tool artifacts
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.pre-commit-cache/
+.pyright/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+*.cover
+
+# Local environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime data bind-mounted by docker-compose
+.browser_profile/
+database/
+logs/
+reports/
+downloaded_files/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Temporary and local diagnostic files
+*.log
+*.tmp
+_test_output.txt
+_test_output/
+test_results.txt
+
+# Operating system metadata
+Thumbs.db
+.DS_Store
+desktop.ini
