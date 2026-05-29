@@ -13,6 +13,7 @@ LABEL org.opencontainers.image.title="E-Commerce Pricing Intelligence Pipeline" 
     org.opencontainers.image.licenses="MIT"
 
 ENV APP_ENV=docker \
+    PRICING_PIPELINE_CONFIG_DIR=/app/config \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -73,13 +74,13 @@ RUN chmod +x /usr/local/bin/ecommerce-pricing-intelligence-pipeline-entrypoint
 
 FROM base AS production
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements.lock ./
 COPY src ./src
 COPY config ./config
 COPY product_codes.txt ./
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install "." \
+    && python -m pip install --constraint requirements.lock "." \
     && mkdir -p database logs reports/charts .browser_profile \
     && chown -R appuser:appuser /app
 
@@ -94,7 +95,7 @@ USER root
 
 COPY tests ./tests
 
-RUN python -m pip install ".[dev]" \
+RUN python -m pip install --constraint requirements.lock ".[dev]" \
     && chown -R appuser:appuser /app
 
 USER appuser

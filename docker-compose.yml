@@ -5,13 +5,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
-    image: ecommerce-pricing-intelligence-pipeline:latest
+      target: production
+    image: ecommerce-pricing-intelligence-pipeline:prod
     init: true
     shm_size: "2gb"
+    security_opt:
+      - no-new-privileges:true
     environment:
       APP_ENV: ${APP_ENV:-docker}
       APP_COMMAND: ${APP_COMMAND:-run}
+      PRICING_PIPELINE_CONFIG_DIR: ${PRICING_PIPELINE_CONFIG_DIR:-/app/config}
       SEED_FILE: ${SEED_FILE:-product_codes.txt}
       TZ: ${TZ:-Europe/Istanbul}
       PRICING_PIPELINE__browser__headless: ${PRICING_PIPELINE__browser__headless:-true}

@@ -17,6 +17,7 @@ from src.definitions import ROOT_DIR
 class Config:
     _instance = None
     _ENV_PREFIX = "PRICING_PIPELINE__"
+    _CONFIG_DIR_ENV = "PRICING_PIPELINE_CONFIG_DIR"
     _CONFIG_FILES = (
         "settings.yaml",
         "browser.yaml",
@@ -35,8 +36,9 @@ class Config:
         return cls._instance
 
     def _load_config(self) -> None:
-        config_dir = os.path.join(ROOT_DIR, "config")
+        config_dir = self._resolve_config_dir()
         settings: dict[str, Any] = {}
+        loaded_files = 0
         try:
             for filename in self._config_files_for_environment():
                 path = os.path.join(config_dir, filename)
@@ -47,6 +49,9 @@ class Config:
                 if not isinstance(loaded, dict):
                     raise RuntimeError(f"{path} must contain a YAML mapping")
                 settings = self._deep_merge(settings, loaded)
+                loaded_files += 1
+            if loaded_files == 0:
+                raise RuntimeError(f"No configuration files found in {config_dir}")
             self._apply_env_overrides(settings)
             self._settings = settings
         except Exception as e:
@@ -77,6 +82,30 @@ class Config:
     def reset_instance(cls) -> None:
         # Reset singleton state for isolated tests.
         cls._instance = None
+
+    @classmethod
+    def _resolve_config_dir(cls) -> str:
+        configured_dir = os.environ.get(cls._CONFIG_DIR_ENV, "").strip()
+        if configured_dir:
+            config_dir = os.path.abspath(configured_dir)
+            if not os.path.isdir(config_dir):
+                raise RuntimeError(
+                    f"{cls._CONFIG_DIR_ENV} does not point to a directory: {config_dir}"
+                )
+            return config_dir
+
+        candidates = (
+            os.path.join(os.getcwd(), "config"),
+            os.path.join(ROOT_DIR, "config"),
+        )
+        for candidate in candidates:
+            if os.path.isdir(candidate):
+                return candidate
+
+        raise RuntimeError(
+            "Could not find a config directory. Run from the repository root or "
+            f"set {cls._CONFIG_DIR_ENV}."
+        )
 
     @classmethod
     def _deep_merge(

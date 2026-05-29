@@ -7,6 +7,7 @@ from src.core.config import Config
 
 def _clear_config_environment(monkeypatch):
     monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("PRICING_PIPELINE_CONFIG_DIR", raising=False)
     for name in list(os.environ):
         if name.startswith("PRICING_PIPELINE__"):
             monkeypatch.delenv(name, raising=False)
@@ -82,5 +83,23 @@ def test_config_loads_app_env_overlay(monkeypatch):
 
         assert config.get("browser", "headless") is True
         assert config.get("browser", "profile_name") == "Default"
+    finally:
+        Config.reset_instance()
+
+
+def test_config_can_load_from_explicit_config_directory(tmp_path, monkeypatch):
+    _clear_config_environment(monkeypatch)
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    (config_dir / "settings.yaml").write_text(
+        "browser:\n  headless: true\n", encoding="utf-8"
+    )
+    monkeypatch.setenv("PRICING_PIPELINE_CONFIG_DIR", str(config_dir))
+
+    Config.reset_instance()
+    try:
+        config = Config()
+
+        assert config.get("browser", "headless") is True
     finally:
         Config.reset_instance()

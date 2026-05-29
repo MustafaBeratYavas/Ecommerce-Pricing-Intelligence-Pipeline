@@ -20,6 +20,9 @@ IMAGE_NAME ?= ecommerce-pricing-intelligence-pipeline:latest
 PROD_IMAGE_NAME ?= ecommerce-pricing-intelligence-pipeline:prod
 SEED_FILE ?= product_codes.txt
 COVERAGE_MIN ?= 80
+CONSTRAINTS ?= requirements.lock
+PYTEST_BASETEMP ?= .pytest_tmp
+PIP_CONSTRAINT_ARG := $(if $(wildcard $(CONSTRAINTS)),--constraint $(CONSTRAINTS),)
 export PRE_COMMIT_HOME ?= .pre-commit-cache
 ifneq ($(wildcard $(VENV_BIN)),)
 export PATH := $(VENV_BIN)$(PATH_SEPARATOR)$(PATH)
@@ -28,7 +31,7 @@ endif
 SRC_DIRS := src tests
 UNIT_TESTS := tests/unit
 
-.PHONY: help install install-dev lint format format-check fix type-check test test-cov pip-check pre-commit pre-commit-install validate ci profile seed run analysis docker-config docker-build docker-prod-build docker-run docker-profile docker-scrape docker-analysis docker-seed docker-test docker-shell
+.PHONY: help install install-dev lint format format-check fix type-check test test-cov pip-check pre-commit pre-commit-install validate ci profile seed run analysis docker-config docker-prod-config docker-build docker-prod-build docker-run docker-profile docker-scrape docker-analysis docker-seed docker-test docker-shell
 
 help:
 	@echo Available targets:
@@ -39,6 +42,7 @@ help:
 	@echo   run                 Run the local scraping pipeline
 	@echo   analysis            Run the local strategic analytics engine
 	@echo   docker-config       Validate the Compose configuration
+	@echo   docker-prod-config  Validate the production-only Compose configuration
 	@echo   docker-build        Build the Docker image
 	@echo   docker-prod-build   Build the production Docker image
 	@echo   docker-run          Build and run the full containerized scraper workflow
@@ -63,11 +67,11 @@ help:
 
 install:
 	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install .
+	$(PYTHON) -m pip install $(PIP_CONSTRAINT_ARG) .
 
 install-dev:
 	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) -m pip install ".[dev]"
+	$(PYTHON) -m pip install $(PIP_CONSTRAINT_ARG) ".[dev]"
 
 lint:
 	$(PYTHON) -m ruff check $(SRC_DIRS)
@@ -86,10 +90,10 @@ type-check:
 	$(PYTHON) -m pyright
 
 test:
-	$(PYTHON) -m pytest $(UNIT_TESTS) -q
+	$(PYTHON) -m pytest $(UNIT_TESTS) -q --basetemp=$(PYTEST_BASETEMP)
 
 test-cov:
-	$(PYTHON) -m pytest $(UNIT_TESTS) -v --tb=short --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=$(COVERAGE_MIN)
+	$(PYTHON) -m pytest $(UNIT_TESTS) -v --tb=short --basetemp=$(PYTEST_BASETEMP) --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=$(COVERAGE_MIN)
 
 pip-check:
 	$(PYTHON) -m pip check
@@ -118,6 +122,9 @@ analysis:
 
 docker-config:
 	$(DOCKER_COMPOSE) config
+
+docker-prod-config:
+	$(DOCKER_COMPOSE) -f docker-compose.yml config
 
 docker-build:
 	$(DOCKER_COMPOSE) build

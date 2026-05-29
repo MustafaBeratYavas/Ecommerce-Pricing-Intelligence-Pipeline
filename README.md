@@ -30,8 +30,9 @@ The downstream analytics layer transforms the normalized offer table into produc
 ```text
 .
 |-- .github
-|   `-- workflows
-|       `-- ci.yml                        # Lint, test, coverage, and Compose validation workflow
+|   |-- workflows
+|   |   `-- ci.yml                        # Lint, test, coverage, Docker build, and Compose validation workflow
+|   `-- dependabot.yml                    # Scheduled dependency update automation
 |-- config
 |   |-- analysis.yaml                     # Analytics thresholds, chart style, category aliases, and plot behavior
 |   |-- browser.yaml                      # Browser runtime and target URL settings
@@ -79,10 +80,12 @@ The downstream analytics layer transforms the normalized offer table into produc
 |-- Dockerfile                            # Multi-stage Chrome/Selenium Python runtime image
 |-- LICENSE                               # MIT license terms
 |-- Makefile                              # Repeatable Docker, developer, and CI command shortcuts
+|-- docker-compose.override.yml           # Local development Compose override
 |-- docker-compose.yml                    # Docker Desktop friendly application workflow
 |-- pyproject.toml                        # Project metadata, build config, and dependency source of truth
 |-- pyrightconfig.json                    # Pylance/Pyright import resolution and type analysis settings
 |-- README.md                             # Project documentation
+|-- requirements.lock                     # Resolved dependency constraints for reproducible installs
 `-- product_codes.txt                     # Seed list of target product codes
 ```
 
@@ -209,13 +212,13 @@ python -m pip install --upgrade pip
 Install only the runtime dependencies when you only need to run the pipeline:
 
 ```bash
-python -m pip install .
+python -m pip install --constraint requirements.lock .
 ```
 
 Install the development extras when you also need tests, linting, coverage, static analysis, and pre-commit tooling:
 
 ```bash
-python -m pip install ".[dev]"
+python -m pip install --constraint requirements.lock ".[dev]"
 ```
 
 *Runtime dependencies: `seleniumbase`, `selenium`, `PyYAML`, `pandas`, `numpy`, `matplotlib`, `seaborn`.*
@@ -262,12 +265,18 @@ python -m src.analysis.main
 
 ## Docker Setup and Execution
 
-Docker is the recommended runtime when you want a reproducible Chrome/Selenium environment without installing browser automation dependencies directly on the host machine.
+Docker is the recommended runtime when you want a reproducible Chrome/Selenium environment without installing browser automation dependencies directly on the host machine. By default, Docker Compose also loads `docker-compose.override.yml`, which builds the development target with test tooling. Use `docker compose -f docker-compose.yml ...` when you want to validate the production-only target.
 
 ### 1. Build the Image
 
 ```bash
 docker compose build
+```
+
+Production-only build:
+
+```bash
+docker compose -f docker-compose.yml build
 ```
 
 ### 2. Run the Pipeline
@@ -284,7 +293,7 @@ docker compose run --rm ecommerce-pricing-intelligence-pipeline test
 
 ## Configuration
 
-Runtime behavior is loaded from the YAML files in `config/`. `settings.yaml` keeps common path, database, and observability defaults, while domain-specific files keep browser, scraping, selector, marketplace, and analytics settings outside Python code. The loader deep-merges these files, applies the overlay selected by `APP_ENV` when present, such as `config/docker.yaml`, and then applies `PRICING_PIPELINE__...` environment overrides, so application code still reads a single logical configuration tree through `Config.get(...)`.
+Runtime behavior is loaded from the YAML files in `config/`. `settings.yaml` keeps common path, database, and observability defaults, while domain-specific files keep browser, scraping, selector, marketplace, and analytics settings outside Python code. The loader resolves the config directory from `PRICING_PIPELINE_CONFIG_DIR` when set, otherwise from the current repository checkout. It deep-merges these files, applies the overlay selected by `APP_ENV` when present, such as `config/docker.yaml`, and then applies `PRICING_PIPELINE__...` environment overrides, so application code still reads a single logical configuration tree through `Config.get(...)`.
 
 | Section | Key Parameters | Description |
 |:---|:---|:---|

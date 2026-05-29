@@ -2,6 +2,18 @@ minimum_pre_commit_version: "4.0.0"
 fail_fast: false
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+
   - repo: local
     hooks:
       - id: ruff-check
@@ -15,24 +27,6 @@ repos:
         entry: python -m ruff format
         language: system
         types_or: [python, pyi]
-
-      - id: validate-toml
-        name: validate toml syntax
-        entry: python -c "import pathlib, sys, tomllib; [tomllib.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: system
-        types: [toml]
-
-      - id: validate-yaml
-        name: validate yaml syntax
-        entry: python -c "import pathlib, sys, yaml; [yaml.safe_load(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: system
-        types: [yaml]
-
-      - id: validate-json
-        name: validate json syntax
-        entry: python -c "import json, pathlib, sys; [json.loads(pathlib.Path(p).read_text(encoding='utf-8')) for p in sys.argv[1:]]"
-        language: system
-        types: [json]
 
       - id: validate-editorconfig
         name: validate editorconfig syntax
