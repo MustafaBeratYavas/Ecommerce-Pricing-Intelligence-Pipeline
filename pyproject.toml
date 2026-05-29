@@ -44,6 +44,10 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
+[project.urls]
+Repository = "https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligence-pipeline"
+"Bug Tracker" = "https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligence-pipeline/issues"
+
 [project.optional-dependencies]
 dev = [
     "pytest==9.0.2",

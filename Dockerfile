@@ -7,9 +7,10 @@ ARG APP_UID=10001
 ARG APP_GID=10001
 
 LABEL org.opencontainers.image.title="E-Commerce Pricing Intelligence Pipeline" \
-      org.opencontainers.image.description="Containerized Selenium-based pricing intelligence pipeline with SQLite warehousing and analytics." \
-      org.opencontainers.image.version="${APP_VERSION}" \
-      org.opencontainers.image.licenses="MIT"
+    org.opencontainers.image.description="Containerized Selenium-based pricing intelligence pipeline with SQLite warehousing and analytics." \
+    org.opencontainers.image.source="https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligence-pipeline" \
+    org.opencontainers.image.version="${APP_VERSION}" \
+    org.opencontainers.image.licenses="MIT"
 
 ENV APP_ENV=docker \
     PYTHONUNBUFFERED=1 \
@@ -21,45 +22,45 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        gnupg \
-        fonts-liberation \
-        libasound2 \
-        libatk-bridge2.0-0 \
-        libatk1.0-0 \
-        libatspi2.0-0 \
-        libcairo2 \
-        libcups2 \
-        libdbus-1-3 \
-        libdrm2 \
-        libgbm1 \
-        libglib2.0-0 \
-        libgtk-3-0 \
-        libnspr4 \
-        libnss3 \
-        libpango-1.0-0 \
-        libu2f-udev \
-        libvulkan1 \
-        libx11-6 \
-        libxcb1 \
-        libxcomposite1 \
-        libxdamage1 \
-        libxext6 \
-        libxfixes3 \
-        libxkbcommon0 \
-        libxrandr2 \
-        wget \
-        xdg-utils \
+    ca-certificates \
+    curl \
+    gnupg \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libu2f-udev \
+    libvulkan1 \
+    libx11-6 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    wget \
+    xdg-utils \
     && install -d -m 0755 /etc/apt/keyrings \
     && curl -fsSL \
-        -o /tmp/google-linux-signing-key.pub \
-        https://dl.google.com/linux/linux_signing_key.pub \
+    -o /tmp/google-linux-signing-key.pub \
+    https://dl.google.com/linux/linux_signing_key.pub \
     && gpg --dearmor -o /etc/apt/keyrings/google-linux.gpg /tmp/google-linux-signing-key.pub \
     && rm -f /tmp/google-linux-signing-key.pub \
     && chmod a+r /etc/apt/keyrings/google-linux.gpg \
     && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-linux.gpg] https://dl.google.com/linux/chrome/deb/ stable main" \
-        > /etc/apt/sources.list.d/google-chrome.list \
+    > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends google-chrome-stable \
     && rm -rf /var/lib/apt/lists/* \
