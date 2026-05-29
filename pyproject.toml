@@ -50,7 +50,7 @@ Repository = "https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligenc
 
 [project.optional-dependencies]
 dev = [
-    "pytest==9.0.2",
+    "pytest==9.0.3",
     "pytest-cov==7.1.0",
     "pre-commit>=4.0,<5",
     "pyright[nodejs]>=1.1,<2",
