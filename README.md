@@ -131,7 +131,7 @@ The analytics suite produces five focused charts from the latest verified local 
   </tr>
 </table>
 
-> **Analyst Insight:** This heatmap reports category-level lowest-price win credit for the top marketplaces by verified offer volume. Tied lowest prices split win credit evenly, and percentages use all verified products in the category as the denominator. A 0.0 value does not automatically indicate a data or algorithm error; it can mean the marketplace had no verified offer in that category or had offers that never became the lowest visible price. With the current seed list, conclusions should be interpreted across Mouse and Headset targets only.
+> **Analyst Insight:** This heatmap reports category-level lowest-price win credit for the top marketplaces by verified active offer volume. Tied lowest prices split win credit evenly, and percentages use verified products with active offers in the category as the denominator. A 0.0 value does not automatically indicate a data or algorithm error; it can mean the marketplace had no verified active offer in that category or had offers that never became the lowest visible price. With the current seed list, conclusions should be interpreted across Mouse and Headset targets only.
 
 <table width="100%">
   <tr align="center">
@@ -141,7 +141,7 @@ The analytics suite produces five focused charts from the latest verified local 
   </tr>
 </table>
 
-> **Analyst Insight:** Each point represents one verified product snapshot. The x-axis shows offer depth, the y-axis shows percentage spread between maximum and minimum visible prices, and bubble size reflects average price. The latest snapshot shows a high-spread market, with median product spread around 100% and the maximum spread above 450%. Products in the upper-right area deserve priority review because broad offer availability has not compressed prices, suggesting fragmented pricing, premium reseller behavior, stock scarcity, or residual variant ambiguity.
+> **Analyst Insight:** Each point represents one verified product snapshot. The x-axis shows offer depth, the y-axis shows percentage spread between maximum and minimum visible prices, and bubble size reflects average price. The latest snapshot shows a high-spread market, with median product spread around 218% and the maximum spread above 740%. Products in the upper-right area deserve priority review because broad offer availability has not compressed prices, suggesting fragmented pricing, premium reseller behavior, stock scarcity, or residual variant ambiguity.
 
 <table width="100%">
   <tr align="center">
@@ -161,7 +161,7 @@ The analytics suite produces five focused charts from the latest verified local 
   </tr>
 </table>
 
-> **Analyst Insight:** Seller depth is calculated as the number of unique active marketplaces per product, not the number of individual merchants. The latest profile skews toward medium-to-high marketplace coverage: 31 of 50 products have 10+ active marketplaces, while only 3 products sit in the 1-3 marketplace band. Low-depth products remain the clearest availability and data-quality risk; high-depth products are better candidates for competitive pricing analysis because the observed price floor is supported by broader market coverage.
+> **Analyst Insight:** Seller depth is calculated as the number of unique active marketplaces per product, not the number of individual merchants. The latest profile skews toward medium-to-high marketplace coverage: 36 of 50 products have 10+ active marketplaces, while only 3 products sit in the 1-3 marketplace band. Low-depth products remain the clearest availability and data-quality risk; high-depth products are better candidates for competitive pricing analysis because the observed price floor is supported by broader market coverage.
 
 <table width="100%">
   <tr align="center">
