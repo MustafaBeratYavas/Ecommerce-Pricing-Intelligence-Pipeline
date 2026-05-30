@@ -227,6 +227,12 @@ python -m pip install --constraint requirements.lock ".[dev]"
 
 ## Quickstart
 
+### Prerequisites
+
+* **Python:** Python 3.11 or later available on your `PATH`.
+* **Google Chrome:** A recent stable version of Google Chrome is required for SeleniumBase browser automation on the host machine. The Docker workflow bundles Chrome automatically.
+* **Docker (optional):** Docker and Docker Compose are required only for [containerized execution](#docker-setup-and-execution). The local workflow does not depend on Docker.
+
 ### 1. Web Extraction
 
 The web extraction workflow prepares a reusable browser profile, loads targets
@@ -269,11 +275,15 @@ Docker is the recommended runtime when you want a reproducible Chrome/Selenium e
 
 ### 1. Build the Image
 
+Build the default Compose image. When `docker-compose.override.yml` is present, this targets the development stage with test tooling included:
+
 ```bash
 docker compose build
 ```
 
 ### 2. Run the Pipeline
+
+Start the full containerized workflow, which creates a browser profile, seeds product targets from `product_codes.txt`, and runs the scraping pipeline:
 
 ```bash
 docker compose up --build ecommerce-pricing-intelligence-pipeline
