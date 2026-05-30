@@ -85,6 +85,7 @@ class TestBrowserEngine(unittest.TestCase):
 
         mock_config_instance = MagicMock()
         engine.config = mock_config_instance
+        engine._prepare_user_data_dir = MagicMock()
         mock_config_instance.get.side_effect = lambda *a, **kw: {
             ("browser", "headless"): True,
             ("browser", "window_size"): "1920,1080",
@@ -103,6 +104,11 @@ class TestBrowserEngine(unittest.TestCase):
         engine.start()
 
         mock_driver_cls.assert_called_once()
+        driver_kwargs = mock_driver_cls.call_args.kwargs
+        self.assertTrue(driver_kwargs["headless2"])
+        self.assertTrue(driver_kwargs["no_sandbox"])
+        self.assertTrue(driver_kwargs["disable_gpu"])
+        engine._prepare_user_data_dir.assert_called_once()
         self.assertEqual(engine.driver, mock_driver_instance)
 
     @patch("src.engine.browser.Driver")
@@ -116,6 +122,7 @@ class TestBrowserEngine(unittest.TestCase):
 
         mock_config_instance = MagicMock()
         engine.config = mock_config_instance
+        engine._prepare_user_data_dir = MagicMock()
         mock_config_instance.get.side_effect = lambda *a, **kw: {
             ("browser", "headless"): True,
             ("browser", "page_load_timeout"): 30,

@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 from cycler import cycler
-from matplotlib import colormaps
+from matplotlib import colormaps, font_manager
 from matplotlib.colors import to_hex
 
 FigureSize = tuple[float, float]
@@ -72,7 +72,9 @@ class StyleConfig:
     }
     PRICE_TIER_ORDER = ["Entry-Level", "Mid-Range", "Premium"]
 
-    FONT_FAMILY = "Segoe UI"
+    FONT_FAMILY: str | list[str] = "Segoe UI"
+    FONT_FALLBACKS = ["Liberation Sans", "DejaVu Sans", "Arial", "sans-serif"]
+    RESOLVED_FONT_FAMILY = "sans-serif"
     TITLE_SIZE = 20
     SUBTITLE_SIZE = 12
     LABEL_SIZE = 12
@@ -177,6 +179,43 @@ class StyleConfig:
                 hex_colors.append(to_hex(color))
         return hex_colors[:count]
 
+    @classmethod
+    def _font_candidates(cls) -> list[str]:
+        configured = cls.FONT_FAMILY
+        if isinstance(configured, str):
+            candidates = [configured]
+        elif isinstance(configured, (list, tuple)):
+            candidates = [str(value) for value in configured]
+        else:
+            candidates = []
+
+        candidates.extend(cls.FONT_FALLBACKS)
+        normalized = []
+        seen = set()
+        for candidate in candidates:
+            family = candidate.strip()
+            key = family.lower()
+            if family and key not in seen:
+                normalized.append(family)
+                seen.add(key)
+        return normalized
+
+    @classmethod
+    def resolve_font_family(cls) -> str:
+        available_fonts = {
+            font.name.lower(): font.name for font in font_manager.fontManager.ttflist
+        }
+        generic_families = {"sans-serif", "serif", "monospace", "cursive", "fantasy"}
+
+        for family in cls._font_candidates():
+            key = family.lower()
+            if key in available_fonts:
+                return available_fonts[key]
+            if key in generic_families:
+                return family
+
+        return "sans-serif"
+
     @staticmethod
     def _coerce_size(value: object, fallback: FigureSize) -> FigureSize:
         if not isinstance(value, (list, tuple)) or len(value) != 2:
@@ -201,6 +240,7 @@ class StyleConfig:
     def apply_theme(cls) -> None:
         # Apply global plotting state at the analytics boundary, not at import time.
         cls.refresh_from_config()
+        cls.RESOLVED_FONT_FAMILY = cls.resolve_font_family()
         sns.set_theme(style="darkgrid")
         plt.rcParams.update(
             {
@@ -218,7 +258,7 @@ class StyleConfig:
                 "text.color": cls.TEXT,
                 "xtick.color": cls.TEXT,
                 "ytick.color": cls.TEXT,
-                "font.family": cls.FONT_FAMILY,
+                "font.family": cls.RESOLVED_FONT_FAMILY,
                 "font.size": cls.LABEL_SIZE,
                 "axes.prop_cycle": cycler(color=cls.MARKETPLACE_COLORS),
                 "legend.facecolor": cls.PANEL,

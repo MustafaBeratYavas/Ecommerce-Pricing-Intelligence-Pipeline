@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pandas as pd
@@ -198,6 +199,28 @@ def test_plot_engine_clear_output_removes_only_png_files():
         assert keep_path.exists()
     finally:
         shutil.rmtree(output_dir.parent, ignore_errors=True)
+
+
+def test_style_config_resolves_configured_font_when_available(monkeypatch):
+    monkeypatch.setattr(StyleConfig, "FONT_FAMILY", "Segoe UI")
+    monkeypatch.setattr(StyleConfig, "FONT_FALLBACKS", ["Liberation Sans"])
+    monkeypatch.setattr(
+        "src.analysis.style_config.font_manager.fontManager.ttflist",
+        [SimpleNamespace(name="Segoe UI")],
+    )
+
+    assert StyleConfig.resolve_font_family() == "Segoe UI"
+
+
+def test_style_config_resolves_available_fallback_font(monkeypatch):
+    monkeypatch.setattr(StyleConfig, "FONT_FAMILY", "Segoe UI")
+    monkeypatch.setattr(StyleConfig, "FONT_FALLBACKS", ["Liberation Sans"])
+    monkeypatch.setattr(
+        "src.analysis.style_config.font_manager.fontManager.ttflist",
+        [SimpleNamespace(name="Liberation Sans")],
+    )
+
+    assert StyleConfig.resolve_font_family() == "Liberation Sans"
 
 
 def test_price_dispersion_legend_only_shows_active_categories():

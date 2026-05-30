@@ -76,6 +76,7 @@ class Logger:
         # Reduce noise from verbose third-party libraries.
         logging.getLogger("selenium").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
+        logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
         logging.getLogger("seleniumbase").setLevel(logging.WARNING)
 
         Logger._configured = True

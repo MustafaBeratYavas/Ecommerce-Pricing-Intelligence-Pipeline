@@ -81,8 +81,10 @@ COPY product_codes.txt ./
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install --constraint requirements.lock "." \
-    && mkdir -p database logs reports/charts .browser_profile \
-    && chown -R appuser:appuser /app
+    && mkdir -p database logs reports/charts .browser_profile downloaded_files \
+    && chown -R appuser:appuser \
+    /app \
+    /usr/local/lib/python3.11/site-packages/seleniumbase/drivers
 
 USER appuser
 

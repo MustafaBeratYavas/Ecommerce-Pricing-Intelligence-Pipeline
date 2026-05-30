@@ -8,6 +8,7 @@ perform scraping or product resolution itself.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 from seleniumbase import Driver
@@ -57,22 +58,35 @@ class BrowserEngine:
         try:
             self.logger.info("Initializing browser engine (UC Mode)...")
             self.logger.info(f"Profile path: {user_data_abs}")
+            self._prepare_user_data_dir(user_data_abs, profile_name)
 
             chromium_args = [
-                "--start-maximized",
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-popup-blocking",
             ]
+            if headless:
+                chromium_args.extend(["--disable-gpu", "--window-size=1920,1080"])
+            else:
+                chromium_args.append("--start-maximized")
             if profile_name:
                 chromium_args.append(f"--profile-directory={profile_name}")
 
+            driver_kwargs: dict[str, Any] = {
+                "uc": True,
+                "chromium_arg": chromium_args,
+                "user_data_dir": user_data_abs,
+                "no_sandbox": True,
+                "disable_gpu": bool(headless),
+            }
+            if headless:
+                driver_kwargs["headless2"] = True
+            else:
+                driver_kwargs["headed"] = True
+
             self.driver = Driver(
-                uc=True,
-                headless=headless,
-                chromium_arg=chromium_args,
-                user_data_dir=user_data_abs,
+                **driver_kwargs,
             )
 
             if user_agent:
@@ -117,6 +131,21 @@ class BrowserEngine:
             self.logger.critical(f"Failed to start browser engine: {e}")
             self.stop()
             raise
+
+    def _prepare_user_data_dir(self, user_data_abs: str, profile_name: str) -> None:
+        user_data_path = Path(user_data_abs)
+        user_data_path.mkdir(parents=True, exist_ok=True)
+        if profile_name:
+            (user_data_path / profile_name).mkdir(parents=True, exist_ok=True)
+
+        for lock_name in ("SingletonCookie", "SingletonLock", "SingletonSocket"):
+            lock_path = user_data_path / lock_name
+            try:
+                lock_path.unlink(missing_ok=True)
+            except OSError as exc:
+                self.logger.debug(
+                    f"Could not remove Chrome profile lock {lock_path}: {exc}"
+                )
 
     def stop(self) -> None:
         # Always clear the cached handle so failed shutdowns cannot be reused.

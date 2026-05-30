@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd /app
 
-mkdir -p database logs reports/charts .browser_profile
+mkdir -p database logs reports/charts .browser_profile downloaded_files
 
 command_name="${1:-${APP_COMMAND:-run}}"
 seed_file="${SEED_FILE:-product_codes.txt}"

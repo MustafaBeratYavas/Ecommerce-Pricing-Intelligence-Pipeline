@@ -46,7 +46,11 @@ charts:
     dpi: 100
     plot_rect: [0.14, 0.17, 0.72, 0.72]
     colorbar_rect: [0.88, 0.17, 0.018, 0.72]
-    font_family: "Segoe UI"
+    font_family:
+      - "Segoe UI"
+      - "Liberation Sans"
+      - "DejaVu Sans"
+      - "sans-serif"
     title_size: 20
     subtitle_size: 12
     label_size: 12

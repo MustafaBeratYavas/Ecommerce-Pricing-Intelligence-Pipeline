@@ -96,16 +96,16 @@ The downstream analytics layer transforms the normalized offer table into produc
 
 | Component | Technology | Purpose |
 |:---|:---|:---|
-| **Runtime** | Python 3.11+ | Pipeline orchestration, service boundaries, DTO modeling, queue processing, and packaged console entrypoints |
+| **Runtime** | Python 3.11-3.13 | Pipeline orchestration, service boundaries, DTO modeling, queue processing, and packaged console entrypoints validated across the CI matrix |
 | **Container Runtime** | Docker, Docker Compose & Google Chrome | Reproducible Chrome/Selenium runtime with bind-mounted database, logs, reports, config, and browser profile directories |
 | **Data Extraction** | SeleniumBase & Selenium | Browser automation, DOM traversal, search execution, dynamic page interaction, and seller card expansion |
 | **Persistence** | SQLite3 | Local relational warehouse for validated `products` snapshots and `target_products` queue state |
 | **Configuration** | PyYAML & environment overlays | Split YAML configuration, Docker-specific `APP_ENV` overlays, and `PRICING_PIPELINE__...` runtime overrides |
 | **Data Processing** | Pandas & NumPy | Snapshot filtering, product-level metric aggregation, price-tier assignment, and analytical transforms |
 | **Visualization** | Matplotlib & Seaborn | Deterministic strategic chart generation for reports and versioned analytics artifacts |
-| **Testing & Coverage** | Pytest, pytest-cov & coverage.py | Unit regression tests, browser-aware integration hooks, branch coverage, XML coverage output, and an 80% coverage gate |
-| **Code Quality** | Ruff, Pyright & pre-commit | Linting, formatting, import ordering, static analysis, and syntax validation before commits |
-| **Automation & CI** | GNU Make, GitHub Actions & Codecov | Repeatable local/CI command targets, Python version matrix validation, Compose config validation, and coverage report upload |
+| **Testing & Coverage** | Pytest, pytest-cov & coverage.py | Unit regression tests, separately marked browser integration tests, branch coverage, XML coverage output, and an 80% coverage gate |
+| **Code Quality** | Ruff, Pyright & pre-commit | Formatting, linting, import ordering, CI static analysis, and local commit-time syntax/configuration checks |
+| **Automation & CI** | GNU Make, GitHub Actions & Codecov | Repeatable local/CI command targets, Python version matrix validation, Compose config validation, Docker image build checks, and non-blocking coverage upload |
 
 </details>
 
@@ -273,19 +273,33 @@ Docker is the recommended runtime when you want a reproducible Chrome/Selenium e
 docker compose build
 ```
 
-Production-only build:
-
-```bash
-docker compose -f docker-compose.yml build
-```
-
 ### 2. Run the Pipeline
 
 ```bash
 docker compose up --build ecommerce-pricing-intelligence-pipeline
 ```
 
-### 3. Run Tests
+### 3. Optional Container Commands
+
+Seed product targets without starting the scraper:
+
+```bash
+docker compose run --rm ecommerce-pricing-intelligence-pipeline seed
+```
+
+Run the scraper without reseeding:
+
+```bash
+docker compose run --rm ecommerce-pricing-intelligence-pipeline scrape
+```
+
+Regenerate analytics from the current warehouse snapshot:
+
+```bash
+docker compose run --rm ecommerce-pricing-intelligence-pipeline analysis
+```
+
+Run unit tests inside the container:
 
 ```bash
 docker compose run --rm ecommerce-pricing-intelligence-pipeline test

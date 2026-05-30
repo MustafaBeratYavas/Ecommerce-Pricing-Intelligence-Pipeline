@@ -9,6 +9,13 @@ def test_logger_setup_creates_file_and_console_handlers(tmp_path, monkeypatch):
     root_logger = logging.getLogger()
     original_handlers = list(root_logger.handlers)
     original_level = root_logger.level
+    noisy_loggers = [
+        logging.getLogger("selenium"),
+        logging.getLogger("urllib3"),
+        logging.getLogger("urllib3.connectionpool"),
+        logging.getLogger("seleniumbase"),
+    ]
+    original_noisy_levels = {logger.name: logger.level for logger in noisy_loggers}
     Logger._configured = False
 
     class FakeConfig:
@@ -39,10 +46,13 @@ def test_logger_setup_creates_file_and_console_handlers(tmp_path, monkeypatch):
         assert (tmp_path / "runtime-logs").is_dir()
         assert list((tmp_path / "runtime-logs").glob("scraper_*.log"))
         assert Logger.get_logger("pricing-test").name == "pricing-test"
+        assert logging.getLogger("urllib3.connectionpool").level == logging.ERROR
     finally:
         for handler in list(root_logger.handlers):
             if handler not in original_handlers:
                 root_logger.removeHandler(handler)
                 handler.close()
         root_logger.setLevel(original_level)
+        for logger in noisy_loggers:
+            logger.setLevel(original_noisy_levels[logger.name])
         Logger._configured = False
