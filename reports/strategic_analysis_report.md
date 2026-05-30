@@ -1,11 +1,11 @@
 # Strategic E-Commerce Analytics Report
 
-- Snapshot Date: `2026-05-09`
+- Snapshot Date: `2026-05-30`
 - Charts Generated: `5`
 - Rejected Unverified Rows: `0`
-- Raw Rows: `900`
-- Latest Snapshot Rows: `900`
-- Active Verified Offers: `900`
+- Raw Rows: `894`
+- Latest Snapshot Rows: `894`
+- Active Verified Offers: `894`
 - Product Metrics: `50`
 
 ## Output Inventory

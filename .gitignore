@@ -53,9 +53,8 @@ downloaded_files/
 logs/*
 !logs/.gitkeep
 
-# Local database files; keep the canonical analytics warehouse versioned
+# Local database files
 *.db
-!database/scraper.db
 *.db-wal
 *.db-shm
 *.sqlite
