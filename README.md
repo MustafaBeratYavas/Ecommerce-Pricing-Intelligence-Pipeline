@@ -121,12 +121,12 @@ The downstream analytics layer transforms the normalized offer table into produc
 
 ## Quantitative Data Analysis & Market Intelligence Report
 
-The analytics suite produces five focused charts from the latest verified dataset stored in `database/scraper.db`. The report prioritizes decision-oriented visuals over chart quantity, focusing on marketplace competitiveness, price dispersion, outlier risk, seller-depth resilience, and portfolio composition. Rows whose resolved page does not expose the requested product code are excluded from analytical outputs.
+The analytics suite produces five focused charts from the latest verified local SQLite warehouse snapshot. The report prioritizes decision-oriented visuals over chart quantity, focusing on marketplace competitiveness, price dispersion, outlier risk, seller-depth resilience, and portfolio composition. Rows whose resolved page does not expose the requested product code are excluded from analytical outputs.
 
 <table width="100%">
   <tr align="center">
     <td>
-      <img src="./reports/charts/01_marketplace_lowest_price_win_rate.png?v=20260509-2109" width="100%" alt="Marketplace Lowest-Price Win Rate">
+      <img src="./reports/charts/01_marketplace_lowest_price_win_rate.png?v=20260530-1443" width="100%" alt="Marketplace Lowest-Price Win Rate">
     </td>
   </tr>
 </table>
@@ -136,7 +136,7 @@ The analytics suite produces five focused charts from the latest verified datase
 <table width="100%">
   <tr align="center">
     <td>
-      <img src="./reports/charts/02_price_spread_market_depth.png?v=20260509-2109" width="100%" alt="Price Spread vs. Market Depth">
+      <img src="./reports/charts/02_price_spread_market_depth.png?v=20260530-1443" width="100%" alt="Price Spread vs. Market Depth">
     </td>
   </tr>
 </table>
@@ -146,7 +146,7 @@ The analytics suite produces five focused charts from the latest verified datase
 <table width="100%">
   <tr align="center">
     <td>
-      <img src="./reports/charts/03_category_price_outlier_risk.png?v=20260509-2109" width="100%" alt="Category Price Distribution and Outlier Risk">
+      <img src="./reports/charts/03_category_price_outlier_risk.png?v=20260530-1443" width="100%" alt="Category Price Distribution and Outlier Risk">
     </td>
   </tr>
 </table>
@@ -156,7 +156,7 @@ The analytics suite produces five focused charts from the latest verified datase
 <table width="100%">
   <tr align="center">
     <td>
-      <img src="./reports/charts/04_seller_depth_risk_profile.png?v=20260509-2109" width="100%" alt="Seller Depth Risk Profile">
+      <img src="./reports/charts/04_seller_depth_risk_profile.png?v=20260530-1443" width="100%" alt="Seller Depth Risk Profile">
     </td>
   </tr>
 </table>
@@ -166,7 +166,7 @@ The analytics suite produces five focused charts from the latest verified datase
 <table width="100%">
   <tr align="center">
     <td>
-      <img src="./reports/charts/05_portfolio_price_tier_mix.png?v=20260509-2109" width="100%" alt="Portfolio Mix by Category and Price Tier">
+      <img src="./reports/charts/05_portfolio_price_tier_mix.png?v=20260530-1443" width="100%" alt="Portfolio Mix by Category and Price Tier">
     </td>
   </tr>
 </table>
@@ -341,7 +341,7 @@ Category and marketplace normalization telemetry is written to `logs/normalizati
 
 - **Point-in-time observations:** Prices, sellers, marketplace availability, and product-page signals are captured as historical snapshots. They should not be interpreted as live market truth after the run has completed.
 - **Current seed coverage:** The active seed list contains Razer mouse and headset targets only. Reported category-level conclusions should not be generalized to keyboards, other brands, or the broader consumer electronics market without expanding the target universe.
-- **Versioned sample artifacts:** `database/scraper.db`, `reports/strategic_analysis_report.md`, and `reports/charts/*.png` are versioned sample artifacts for reproducible portfolio review. Regenerate them deliberately and review data-quality metrics before using them as current market evidence.
+- **Versioned sample artifacts:** `reports/strategic_analysis_report.md` and `reports/charts/*.png` are versioned sample artifacts for reproducible portfolio review. The local SQLite warehouse under `database/` is runtime data and is intentionally ignored. Regenerate artifacts deliberately and review data-quality metrics before using them as current market evidence.
 - **Incomplete market visibility:** The pipeline stores only visible offers with valid marketplace and positive price values. Listings can still be missed because of dynamic rendering, regional availability, failed retries, page instability, hidden seller data, or missing visible price signals.
 
 ### Product Matching and Extraction Limitations
