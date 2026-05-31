@@ -6,13 +6,25 @@
 
   <p>
     <a href="https://www.python.org/">
-      <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&amp;logoColor=white" alt="Python" />
-    </a>
-    <a href="https://pandas.pydata.org/">
-      <img src="https://img.shields.io/badge/Pandas-3.0.2-150458?logo=pandas&amp;logoColor=white" alt="Pandas" />
+      <img src="https://img.shields.io/badge/Python-3.11--3.13-3776AB?logo=python&amp;logoColor=white" alt="Python 3.11-3.13" />
     </a>
     <a href="https://seleniumbase.io/">
-      <img src="https://img.shields.io/badge/SeleniumBase-4.46%2B-00A98F?logo=selenium&amp;logoColor=white" alt="SeleniumBase" />
+      <img src="https://img.shields.io/badge/SeleniumBase-4.46.5-00A98F?logo=selenium&amp;logoColor=white" alt="SeleniumBase 4.46.5" />
+    </a>
+    <a href="https://www.sqlite.org/">
+      <img src="https://img.shields.io/badge/SQLite-Warehouse-003B57?logo=sqlite&amp;logoColor=white" alt="SQLite warehouse" />
+    </a>
+    <a href="https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligence-pipeline/actions/workflows/ci.yml">
+      <img src="https://github.com/MustafaBeratYavas/ecommerce-pricing-intelligence-pipeline/actions/workflows/ci.yml/badge.svg" alt="CI" />
+    </a>
+    <a href="./Dockerfile">
+      <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&amp;logoColor=white" alt="Docker ready" />
+    </a>
+    <a href="https://docs.astral.sh/ruff/">
+      <img src="https://img.shields.io/badge/Ruff-Lint%20%26%20Format-D7FF64?logo=ruff&amp;logoColor=black" alt="Ruff lint and format" />
+    </a>
+    <a href="https://github.com/microsoft/pyright">
+      <img src="https://img.shields.io/badge/Pyright-Type%20Checked-2A6DB2" alt="Pyright type checked" />
     </a>
     <a href="./LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
@@ -209,13 +221,13 @@ python -m pip install --upgrade pip
 
 ### Step 4 - Install Project Dependencies:
 
-Install only the runtime dependencies when you only need to run the pipeline:
+Install only the runtime dependencies using the locked dependency constraints:
 
 ```bash
 python -m pip install --constraint requirements.lock .
 ```
 
-Install the development extras when you also need tests, linting, coverage, static analysis, and pre-commit tooling:
+Install the development extras using the same locked dependency constraints:
 
 ```bash
 python -m pip install --constraint requirements.lock ".[dev]"
