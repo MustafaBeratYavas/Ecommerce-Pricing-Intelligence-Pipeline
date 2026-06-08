@@ -1,6 +1,5 @@
-# Resolved dependency constraints for reproducible local, CI, and Docker installs.
-# Generated from the project development environment; refresh intentionally after
-# dependency updates and verify with `make validate`.
+# Resolved constraints keep local, CI, and Docker installs reproducible.
+# Refresh intentionally after dependency updates and validate with `make validate`.
 async-generator==1.10
 attrs==26.1.0
 beautifulsoup4==4.14.3

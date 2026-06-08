@@ -1,10 +1,10 @@
-# Python bytecode and native build artifacts
+# Python bytecode and local build artifacts.
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Python packaging outputs
+# Python packaging outputs.
 build/
 dist/
 *.egg
@@ -12,7 +12,7 @@ dist/
 .eggs/
 pip-wheel-metadata/
 
-# Virtual environments and local environment files
+# Virtual environments and local environment files.
 .venv/
 venv/
 env/
@@ -20,7 +20,7 @@ env/
 .env.*
 !.env.example
 
-# IDE and editor metadata
+# IDE and editor metadata.
 .vscode/*
 !.vscode/
 !.vscode/settings.json
@@ -32,7 +32,7 @@ env/
 *.swo
 *~
 
-# Test, lint, type-check, and coverage outputs
+# Test, lint, type-checking, and coverage output.
 .pytest_cache/
 .pytest_tmp*/
 .ruff_cache/
@@ -47,13 +47,13 @@ coverage.xml
 htmlcov/
 *.cover
 
-# Application runtime data
+# Application runtime data.
 .browser_profile/
 downloaded_files/
 logs/*
 !logs/.gitkeep
 
-# Local database files
+# Local database files.
 *.db
 *.db-wal
 *.db-shm
@@ -61,14 +61,14 @@ logs/*
 *.sqlite3
 !database/.gitkeep
 
-# Temporary and local diagnostic files
+# Temporary files and local diagnostic output.
 *.log
 *.tmp
 _test_output.txt
 _test_output/
 test_results.txt
 
-# Operating system metadata
+# Operating-system metadata.
 Thumbs.db
 .DS_Store
 desktop.ini

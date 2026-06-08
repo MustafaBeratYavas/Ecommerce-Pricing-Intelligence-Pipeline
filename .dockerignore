@@ -1,9 +1,9 @@
-# Version control and repository automation not needed in the image
+# Version-control and automation files that are not required in the image.
 .git/
 .github/
 .gitignore
 
-# Local editor and workspace metadata
+# Local editor and workspace metadata.
 .vscode/
 .idea/
 .project
@@ -12,7 +12,7 @@
 *.swo
 *~
 
-# Python caches, packaging outputs, and quality-tool artifacts
+# Python caches, package build outputs, and quality-tool artifacts.
 __pycache__/
 *.py[cod]
 *.egg
@@ -34,7 +34,7 @@ coverage.xml
 htmlcov/
 *.cover
 
-# Local environments and secrets
+# Local environments and secret-bearing files.
 .venv/
 venv/
 env/
@@ -44,7 +44,7 @@ env/
 *.pem
 *.key
 
-# Runtime data bind-mounted by docker-compose
+# Runtime data is mounted by Docker Compose instead of baked into the image.
 .browser_profile/
 database/
 logs/
@@ -56,14 +56,14 @@ downloaded_files/
 *.sqlite
 *.sqlite3
 
-# Temporary and local diagnostic files
+# Temporary files and local diagnostic output.
 *.log
 *.tmp
 _test_output.txt
 _test_output/
 test_results.txt
 
-# Operating system metadata
+# Operating-system metadata.
 Thumbs.db
 .DS_Store
 desktop.ini
