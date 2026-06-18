@@ -14,7 +14,7 @@ authors = [
     {name = "Mustafa Berat Yavas"}
 ]
 dependencies = [
-    "seleniumbase==4.46.5",
+    "seleniumbase==4.49.2",
     "selenium==4.40.0",
     "PyYAML==6.0.3",
     "pandas==3.0.2",
