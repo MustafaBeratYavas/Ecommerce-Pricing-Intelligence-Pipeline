@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM python:3.11-slim-bookworm AS base
+FROM python:3.14-slim-bookworm AS base
 
 ARG APP_VERSION=1.0.0
 ARG APP_UID=10001
